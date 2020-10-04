@@ -49,14 +49,15 @@ namespace Backend.Controllers.PageLeaderBoard
                 else
                 {
                     Response.StatusCode = BadRequest().StatusCode;
-                    return "";
+                    return new BsonDocument().ToString();
                 }
 
             }
-            catch (Exception)
+            catch (Exception )
             {
                 Response.StatusCode = BadRequest().StatusCode;
-                return "";
+
+                return new BsonDocument().ToString();
             }
         }
 
