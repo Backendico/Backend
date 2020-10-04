@@ -1,6 +1,7 @@
 ﻿using Backend2.Pages.Apis;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 using System;
 using System.Diagnostics;
@@ -85,23 +86,29 @@ namespace Backend.Controllers.PageChoiceStudioGame
         {
             if (await CheackToken(Token))
             {
-                var finalResult = new BsonDocument();
+                var Option = new FindOptions<BsonDocument>();
+                Option.Projection = new BsonDocument { {"Games",1 },{"_id",0 } };
+
 
                 var filter = new BsonDocument { { "AccountSetting.Token", Token } };
 
-                var ResultFind = await Client.GetDatabase(UsersDB).GetCollection<BsonDocument>(UsersCollection).Find(filter).SingleAsync();
+                var ResultFind = await Client.GetDatabase(UsersDB).GetCollection<BsonDocument>(UsersCollection).FindAsync(filter,Option).Result.SingleAsync();
 
+             
+                var finalResult = new BsonDocument() { { "Settings" , new BsonArray() }  };
                 foreach (var StudioName in ResultFind["Games"].AsBsonArray)
                 {
+                    var Option1 = new FindOptions<BsonDocument>();
+                    Option.Projection = new BsonDocument { {"Setting",1 } };
                     var FilterSettingFind = new BsonDocument { { "_id", "Setting" } };
 
-                    var Setting = await Client.GetDatabase(StudioName.AsString).GetCollection<BsonDocument>("Setting").Find(FilterSettingFind).SingleAsync<BsonDocument>();
+                    var Setting = await Client.GetDatabase(StudioName.AsString).GetCollection<BsonDocument>("Setting").FindAsync(FilterSettingFind,Option1).Result.SingleAsync<BsonDocument>();
 
 
-                    finalResult[$"{Setting["Setting"]["Name"]}"] = Setting["Setting"];
+                    finalResult["Settings"].AsBsonArray.Add(Setting);
                 }
 
-                return finalResult.ToJson();
+                return finalResult.ToString();
             }
             else
             {
