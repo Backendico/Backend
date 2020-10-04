@@ -55,7 +55,8 @@ namespace Backend2.Pages.Apis.PageDashboard
             {
                 {"Players" ,new BsonDocument{ } },
                 {"Logins",new BsonDocument{ } },
-                {"Counts",new BsonDocument{ } }
+                {"Counts",new BsonDocument{ } },
+                    {"Monetiz",new BsonDocument{} }
             };
 
                 //player_24hours
@@ -166,6 +167,7 @@ namespace Backend2.Pages.Apis.PageDashboard
                     Result["Logins"].AsBsonDocument.Add("30Days", 0);
                 }
 
+
                 //LeaderboardCount
                 try
                 {
@@ -178,7 +180,6 @@ namespace Backend2.Pages.Apis.PageDashboard
                 catch (Exception)
                 {
                     Result["Counts"].AsBsonDocument.Add("Leaderboards", 0);
-
                 }
 
                 //PlayerCount
@@ -193,6 +194,14 @@ namespace Backend2.Pages.Apis.PageDashboard
 
                     Result["Counts"].AsBsonDocument.Add("Players", 0);
                 }
+
+
+                //recive Monetize  list
+                var option4 = new FindOptions<BsonDocument>();
+                option4.Projection = new BsonDocument { { "Monetiz", 1 } };
+
+                var Monetize = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } }, option4).Result.SingleAsync();
+                Result["Monetiz"] = Monetize;
 
                 Response.StatusCode = Ok().StatusCode;
                 return Result.ToString();
