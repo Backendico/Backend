@@ -168,6 +168,32 @@ namespace Backend.Controllers.PageChoiceStudioGame
 
 
         [HttpPost]
+        public async Task<string> RecivePaymentList(string Token,string NameStudio)
+        {
+            if (await CheackToken(Token))
+            {
+                var pipe = new[]
+                {
+                    new BsonDocument{ {"$unwind","$Monetiz.PaymentList" } },
+                    new BsonDocument{{"$sort",new BsonDocument { {"Monetiz.PaymentList.Created", -1 } } } },
+                new BsonDocument{{"$group",new BsonDocument { {"_id","$_id" },{"Detail",new BsonDocument { {"$push", "$Monetiz.PaymentList" } } } } }}
+                };
+
+
+                var Result = await Client.GetDatabase(NameStudio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(pipe).Result.SingleAsync();
+
+                Response.StatusCode = Ok().StatusCode;
+
+                return Result.ToString();
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+                return "";
+            }
+        }
+
+        [HttpPost]
         public async Task<string> ReciveMonetize(string Token, string NameStudio)
         {
             if (await CheackToken(Token))
