@@ -109,6 +109,7 @@ namespace Backend.Controllers.PageChoiceStudioGame
                     finalResult["Settings"].AsBsonArray.Add(Setting);
                 }
 
+                Response.StatusCode = Ok().StatusCode;
                 return finalResult.ToString();
             }
             else
