@@ -43,17 +43,33 @@ namespace Backend2.Pages.Apis.PageSupport
         [HttpPost]
         public async Task<string> ReciveSupports(string Token, string Studio)
         {
-            var Pipe = new[]
+            try
             {
+                if (await CheackToken(Token))
+                {
+                    var Pipe = new[]
+                    {
                 new BsonDocument { {"$unwind","$Support" } },
                 new BsonDocument{ {"$sort",new BsonDocument { {"Support.IsOpen",-1 },{"Support.Created",-1 } } } },
                 new BsonDocument{{"$group",new BsonDocument { {"_id","$_id" },{"Detail",new BsonDocument { {"$push", "$Support" } } } } }}
-            };
+                    };
 
+                    var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
 
-            var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
-
-            return Result.ToString();
+                    Response.StatusCode = Ok().StatusCode;
+                    return Result.ToString();
+                }
+                else
+                {
+                    Response.StatusCode = BadRequest().StatusCode;
+                    return new BsonDocument().ToString();
+                }
+            }
+            catch (Exception)
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+                return new BsonDocument().ToString();
+            }
         }
 
         [HttpPut]
@@ -80,7 +96,7 @@ namespace Backend2.Pages.Apis.PageSupport
         }
 
         [HttpPost]
-        public async Task CloseSupport(string Token,string Studio,string TokenSupport)
+        public async Task CloseSupport(string Token, string Studio, string TokenSupport)
         {
             var update = new BsonDocument
             {
@@ -92,7 +108,7 @@ namespace Backend2.Pages.Apis.PageSupport
             new BsonDocumentArrayFilterDefinition<BsonDocument>(new BsonDocument{ {"f.Token" ,new BsonDocument { { "$in",new BsonArray { ObjectId.Parse(TokenSupport) } } } } })
             };
 
-            await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } },update,new UpdateOptions {ArrayFilters=arrayfilter });
+            await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, update, new UpdateOptions { ArrayFilters = arrayfilter });
         }
 
     }

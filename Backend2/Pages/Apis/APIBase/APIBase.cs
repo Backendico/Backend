@@ -73,8 +73,6 @@ namespace Backend2.Pages.Apis
             public ModelAccountSetting AccountSetting;
 
             public BsonDocument Leaderboards = new BsonDocument();
-            public BsonArray Logs = new BsonArray();
-            public BsonArray Support = new BsonArray();
 
             public class ModelAccountSetting
             {

@@ -30,6 +30,7 @@ namespace Backend.Controllers.PageChoiceStudioGame
                 var NameDataBase = NameStudio + "+" + ObjectId.GenerateNewId();
                 var ModelDataBase = new BsonDocument {
                 { "_id","Setting"},
+                    {"Logs",new BsonArray() },
                 { "Setting",
                     new BsonDocument
                     {
@@ -87,22 +88,22 @@ namespace Backend.Controllers.PageChoiceStudioGame
             if (await CheackToken(Token))
             {
                 var Option = new FindOptions<BsonDocument>();
-                Option.Projection = new BsonDocument { {"Games",1 },{"_id",0 } };
+                Option.Projection = new BsonDocument { { "Games", 1 }, { "_id", 0 } };
 
 
                 var filter = new BsonDocument { { "AccountSetting.Token", Token } };
 
-                var ResultFind = await Client.GetDatabase(UsersDB).GetCollection<BsonDocument>(UsersCollection).FindAsync(filter,Option).Result.SingleAsync();
+                var ResultFind = await Client.GetDatabase(UsersDB).GetCollection<BsonDocument>(UsersCollection).FindAsync(filter, Option).Result.SingleAsync();
 
-             
-                var finalResult = new BsonDocument() { { "Settings" , new BsonArray() }  };
+
+                var finalResult = new BsonDocument() { { "Settings", new BsonArray() } };
                 foreach (var StudioName in ResultFind["Games"].AsBsonArray)
                 {
                     var Option1 = new FindOptions<BsonDocument>();
-                    Option.Projection = new BsonDocument { {"Setting",1 } };
+                    Option.Projection = new BsonDocument { { "Setting", 1 } };
                     var FilterSettingFind = new BsonDocument { { "_id", "Setting" } };
 
-                    var Setting = await Client.GetDatabase(StudioName.AsString).GetCollection<BsonDocument>("Setting").FindAsync(FilterSettingFind,Option1).Result.SingleAsync<BsonDocument>();
+                    var Setting = await Client.GetDatabase(StudioName.AsString).GetCollection<BsonDocument>("Setting").FindAsync(FilterSettingFind, Option1).Result.SingleAsync<BsonDocument>();
 
 
                     finalResult["Settings"].AsBsonArray.Add(Setting);
@@ -168,7 +169,7 @@ namespace Backend.Controllers.PageChoiceStudioGame
 
 
         [HttpPost]
-        public async Task<string> RecivePaymentList(string Token,string NameStudio)
+        public async Task<string> RecivePaymentList(string Token, string NameStudio)
         {
             if (await CheackToken(Token))
             {

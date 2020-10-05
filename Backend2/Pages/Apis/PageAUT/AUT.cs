@@ -51,7 +51,6 @@ namespace Backend.Controllers
                     }
                     
                 };
-                ModelUser.Support = new BsonArray();
                 ModelUser.Leaderboards = new BsonDocument();
 
 
