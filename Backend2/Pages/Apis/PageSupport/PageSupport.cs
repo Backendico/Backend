@@ -117,7 +117,7 @@ namespace Backend2.Pages.Apis.PageSupport
         {
             var DeserilseDetail = BsonDocument.Parse(Detail);
 
-            await Client.GetDatabase(AdminDB).GetCollection<BsonDocument>("Bugs").InsertOneAsync(DeserilseDetail);
+            await Client.GetDatabase(UsersDB).GetCollection<BsonDocument>("Bugs").InsertOneAsync(DeserilseDetail);
 
 
             //cheack follow and inject to support

@@ -13,7 +13,6 @@ namespace Backend2.Pages.Apis
         internal MongoClient Client = new MongoClient();
         internal string UsersDB => "Users";
         internal string UsersCollection => "Users";
-        internal string AdminDB => "Setting";
 
         public async Task<bool> CheackToken(string Token)
         {
@@ -24,8 +23,6 @@ namespace Backend2.Pages.Apis
 
             if (User.ElementCount >= 1)
             {
-
-
                 return true;
             }
             else

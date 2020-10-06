@@ -33,7 +33,7 @@ namespace Backend2.Pages.AdminApis.SubpageStatices
 
             //Email Cheack
             {
-                Statices["Emails"]["Send"] = await Client.GetDatabase(AdminDB).GetCollection<BsonDocument>("Emails").CountDocumentsAsync("{}");
+                Statices["Emails"]["Send"] = await Client.GetDatabase(UsersDB).GetCollection<BsonDocument>("Emails").CountDocumentsAsync("{}");
 
                 if (Statices["Emails"]["Send"] >= 1)
                 {
@@ -44,12 +44,12 @@ namespace Backend2.Pages.AdminApis.SubpageStatices
 
             //Bugs
             {
-                Statices["BugReport"]["Count"] = await Client.GetDatabase(AdminDB).GetCollection<BsonDocument>("Bugs").CountDocumentsAsync("{}");
+                Statices["BugReport"]["Count"] = await Client.GetDatabase(UsersDB).GetCollection<BsonDocument>("Bugs").CountDocumentsAsync("{}");
             }
 
             //Support
             {
-                Statices["Supports"]["Count"] = await Client.GetDatabase(AdminDB).GetCollection<BsonDocument>("Support").CountDocumentsAsync("{}");
+                Statices["Supports"]["Count"] = await Client.GetDatabase(UsersDB).GetCollection<BsonDocument>("Support").CountDocumentsAsync("{}");
             }
 
             //Cash Cheack
