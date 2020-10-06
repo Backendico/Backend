@@ -28,6 +28,7 @@ namespace Backend2.Pages.Apis.PageSupport
                 deseriledata.Add("Messages", new BsonArray());
                 deseriledata.Add("Token", ObjectId.GenerateNewId());
 
+
                 var Update = new UpdateDefinitionBuilder<BsonDocument>().Push("Support", deseriledata);
 
                 await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update);
@@ -111,5 +112,31 @@ namespace Backend2.Pages.Apis.PageSupport
             await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, update, new UpdateOptions { ArrayFilters = arrayfilter });
         }
 
+        [HttpPost]
+        public async Task<bool> AddReportBug(string Token, string Studio, string Detail)
+        {
+            var DeserilseDetail = BsonDocument.Parse(Detail);
+
+            await Client.GetDatabase(AdminDB).GetCollection<BsonDocument>("Bugs").InsertOneAsync(DeserilseDetail);
+
+
+            //cheack follow and inject to support
+            if (bool.Parse(DeserilseDetail["Follow"].ToString()))
+            {
+                var SerilseSupport = new BsonDocument
+                {
+                    { "Header", DeserilseDetail["Subject"]},
+                    {"Priority",DeserilseDetail["Priority"] },
+                    {"Part", 0 },
+                    { "IsReport", true}
+            };
+
+                await AddSupport(Token, Studio, SerilseSupport.ToString());
+            }
+            Response.StatusCode = Ok().StatusCode;
+
+            return true;
+        }
+    
     }
 }

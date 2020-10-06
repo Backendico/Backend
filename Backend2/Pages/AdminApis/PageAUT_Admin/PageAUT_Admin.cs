@@ -15,21 +15,25 @@ namespace Backend2.Pages.AdminApis.PageAUT_Admin
     public class PageAUT_Admin : BasicApiAdmin
     {
         [HttpPost]
-        public async Task<bool> Login(string Username, string Password)
+        public async Task<string> Login(string Username, string Password)
         {
+            var Option = new FindOptions<BsonDocument>();
+            Option.Projection = new BsonDocument { { "Account.Password", 0 } };
             var Quary = new BsonDocument { { "Account.Username", Username }, { "Account.Password", Password } };
 
 
-            var Result = await Client.GetDatabase(AdminDatabase).GetCollection<BsonDocument>(AdminCollection).FindAsync(Quary).Result.SingleAsync();
+            var Result = await Client.GetDatabase(AdminDatabase).GetCollection<BsonDocument>(AdminCollection).FindAsync(Quary,Option).Result.SingleAsync();
 
             if (Result.ElementCount >= 1)
             {
-                return true;
+                Response.StatusCode = Ok().StatusCode;
+                return Result.ToString();
 
             }
             else
             {
-                return false;
+                Response.StatusCode = BadRequest().StatusCode;
+                return new BsonDocument().ToString();
             }
 
         }
