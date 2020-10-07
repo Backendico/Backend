@@ -51,7 +51,6 @@ namespace Backend.Controllers
                     }
                     
                 };
-                ModelUser.Leaderboards = new BsonDocument();
 
 
                 await Client.GetDatabase(UsersDB).GetCollection<UserModel>(UsersCollection).InsertOneAsync(ModelUser);

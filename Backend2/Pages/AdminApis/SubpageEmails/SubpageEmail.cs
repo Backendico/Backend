@@ -16,8 +16,10 @@ namespace Backend2.Pages.AdminApis.SubpageEmails
         public async Task<string> ReciveEmailList(string Token)
         {
             var Result = new BsonDocument { { "ListEmails", new BsonArray() } };
+            var Option = new FindOptions<BsonDocument>();
+            Option.Sort = new BsonDocument { { "Created", -1 } };
 
-            var Find = await Client.GetDatabase(AdminDatabase).GetCollection<BsonDocument>("Emails").FindAsync("{}").Result.ToListAsync();
+            var Find = await Client.GetDatabase(AdminDatabase).GetCollection<BsonDocument>("Emails").FindAsync("{}", Option).Result.ToListAsync();
 
 
             if (Find.Count >= 1)
@@ -57,10 +59,10 @@ namespace Backend2.Pages.AdminApis.SubpageEmails
             Response.StatusCode = Ok().StatusCode;
         }
 
-        [HttpDelete ]
+        [HttpDelete]
         public async Task RemoveEmail(string Token, string TokenEmail)
         {
-          
+
             var Result = await Client.GetDatabase(AdminDatabase).GetCollection<BsonDocument>("Emails").DeleteOneAsync(new BsonDocument { { "Token", ObjectId.Parse(TokenEmail) } });
 
 

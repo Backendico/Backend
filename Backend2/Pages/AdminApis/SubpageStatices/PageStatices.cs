@@ -7,6 +7,7 @@ using Backend2.Pages.Apis;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
+using MongoDB.Driver;
 
 namespace Backend2.Pages.AdminApis.SubpageStatices
 {
@@ -31,13 +32,22 @@ namespace Backend2.Pages.AdminApis.SubpageStatices
             }
 
 
-            //Email Cheack
+            //Email 
             {
-                Statices["Emails"]["Send"] = await Client.GetDatabase(UsersDB).GetCollection<BsonDocument>("Emails").CountDocumentsAsync("{}");
+                var Emails = await Client.GetDatabase(UsersDB).GetCollection<BsonDocument>("Emails").FindAsync("{}").Result.ToListAsync();
 
-                if (Statices["Emails"]["Send"] >= 1)
+                Statices["Emails"]["Send"] = Emails.Count;
+
+                foreach (var item in Emails)
                 {
-                    Debug.WriteLine("find ");
+                    var filter = new BsonDocument { {"AccountSetting.Email",item["Email"] } };
+
+                   var Result= await Client.GetDatabase(UsersDB).GetCollection<BsonDocument>(UsersCollection).FindAsync(filter).Result.ToListAsync();
+             
+                    if (Result.Count>=1)
+                    {
+                        Statices["Emails"]["Register"] = Statices["Emails"]["Register"].AsInt32 + 1;
+                    }
                 }
 
             }

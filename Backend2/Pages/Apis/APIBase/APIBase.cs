@@ -70,7 +70,6 @@ namespace Backend2.Pages.Apis
 
             public ModelAccountSetting AccountSetting;
 
-            public BsonDocument Leaderboards = new BsonDocument();
 
             public class ModelAccountSetting
             {
@@ -79,7 +78,6 @@ namespace Backend2.Pages.Apis
                 public string Email;
                 public string Phone;
                 public string Token = ObjectId.GenerateNewId().ToString();
-                public BsonDocument Votes = new BsonDocument();
             }
         }
     }
