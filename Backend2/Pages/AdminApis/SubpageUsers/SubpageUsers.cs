@@ -39,8 +39,8 @@ namespace Backend2.Pages.AdminApis.SubpageUsers
                        {"Phone",item["AccountSetting"]["Phone"] },
                        {"GameStudio",item["Games"].AsBsonArray.Count },
                        {"Players",0 },
-                       {"Leaderboards",0 }, //cheack
-                       {"Cash",0 }, //cheack
+                       {"Leaderboards",0 }, 
+                       {"Cash",0 }, 
                     };
 
                     //RecivePlayers

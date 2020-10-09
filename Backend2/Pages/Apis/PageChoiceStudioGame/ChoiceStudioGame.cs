@@ -42,7 +42,7 @@ namespace Backend.Controllers.PageChoiceStudioGame
                         {"Database",NameDataBase }}
                     }
 
-               ,{ "Leaderboards",new BsonDocument()},
+               ,{ "Leaderboards",new BsonDocument{ {"List",new BsonDocument { } } } },
                     { "Monetiz", new BsonDocument {
                     { "PaymentList",new BsonArray()},
                     { "Leaderboards", 3 },
