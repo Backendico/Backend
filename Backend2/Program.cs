@@ -21,7 +21,6 @@ namespace Backend2
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    
                 });
     }
 }

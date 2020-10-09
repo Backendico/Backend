@@ -34,7 +34,8 @@ namespace Backend2.Pages.AdminApis.SubpageSupport
                     {
                         new BsonDocument{ { "$unwind","$Support"} },
                         new BsonDocument{{"$match",new BsonDocument { {"Support.IsOpen",true} }} },
-                        new BsonDocument{{"$project",new BsonDocument { { "Support", 1 } ,{"_id",0 } } } }
+                        new BsonDocument{{"$project",new BsonDocument { { "Support", 1 } ,{"_id",0 } } } },
+                        new BsonDocument{ { "$sort", new BsonDocument { { "Support.Priority", -1 } } } }
                     };
 
                     var Setting = await Client.GetDatabase(Studio.AsString).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.ToListAsync();
@@ -43,7 +44,6 @@ namespace Backend2.Pages.AdminApis.SubpageSupport
                     {
                         Support["Support"].AsBsonDocument.Add("Creator", Games["AccountSetting"]["Token"]);
                         Result["ListSupports"].AsBsonArray.Add(Support["Support"]);
-
                     }
 
                 }
@@ -62,7 +62,7 @@ namespace Backend2.Pages.AdminApis.SubpageSupport
 
         }
 
-       
+
         public static async Task<int> SupportCount()
         {
 

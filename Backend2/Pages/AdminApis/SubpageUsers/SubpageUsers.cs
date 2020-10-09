@@ -62,7 +62,6 @@ namespace Backend2.Pages.AdminApis.SubpageUsers
                                 new BsonDocument{{"$addFields",new BsonDocument { {"LeaderboardArray",new BsonDocument { {"$objectToArray", "$Leaderboards.List" } } } } }},
                                 new BsonDocument{{"$addFields",new BsonDocument { {"Cash","$Monetiz.Cash" },{"LeaderboardSize", new BsonDocument { { "$size", "$LeaderboardArray" } } } } } },
                                 new BsonDocument{ {"$project",new BsonDocument { {"_id",0 },{"Cash",1 },{"LeaderboardSize",1 } } } }
-
                             };
 
                             var Setting = await Client.GetDatabase(Studio.ToString()).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(PipeLine).Result.SingleAsync();

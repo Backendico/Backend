@@ -16,7 +16,8 @@ namespace Backend2.Pages.AdminApis.SubpageBugs
         public async Task<string> ReciveBugs(string Token)
         {
             var Result = new BsonDocument { { "ListBugs", new BsonArray() } };
-            var ListBugs = await Client.GetDatabase("Users").GetCollection<BsonDocument>("Bugs").FindAsync("{}").Result.ToListAsync();
+            var Option = new FindOptions<BsonDocument>() { Sort = new BsonDocument { { "Priority", -1 } } };
+            var ListBugs = await Client.GetDatabase("Users").GetCollection<BsonDocument>("Bugs").FindAsync("{}",Option).Result.ToListAsync();
 
             if (ListBugs.Count >= 1)
             {
@@ -24,7 +25,7 @@ namespace Backend2.Pages.AdminApis.SubpageBugs
                 {
                     Result["ListBugs"].AsBsonArray.Add(Bugs);
                 }
-               
+
                 Response.StatusCode = Ok().StatusCode;
                 return Result.ToString();
             }
