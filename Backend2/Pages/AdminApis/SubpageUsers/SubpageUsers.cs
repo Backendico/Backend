@@ -38,16 +38,16 @@ namespace Backend2.Pages.AdminApis.SubpageUsers
                        {"Email",item["AccountSetting"]["Email"] },
                        {"Phone",item["AccountSetting"]["Phone"] },
                        {"GameStudio",item["Games"].AsBsonArray.Count },
-                       {"Players",0 },
-                       {"Leaderboards",0 }, 
-                       {"Cash",0 }, 
+                       {"Players",new BsonInt64(0) },
+                       {"Leaderboards",new BsonInt32(0) },
+                       {"Cash",new BsonInt32(0) },
                     };
 
                     //RecivePlayers
                     {
                         foreach (var Studio in item["Games"].AsBsonArray)
                         {
-                            DetailUser["Players"] = await Client.GetDatabase(Studio.ToString()).GetCollection<BsonDocument>("Players").CountDocumentsAsync("{}");
+                            DetailUser["Players"] = DetailUser["Players"].ToInt64() + await Client.GetDatabase(Studio.ToString()).GetCollection<BsonDocument>("Players").CountDocumentsAsync("{}");
                         }
                     }
 
@@ -66,8 +66,8 @@ namespace Backend2.Pages.AdminApis.SubpageUsers
                             };
 
                             var Setting = await Client.GetDatabase(Studio.ToString()).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(PipeLine).Result.SingleAsync();
-                            DetailUser["Leaderboards"] = Setting["LeaderboardSize"];
-                            DetailUser["Cash"] = Setting["Cash"];
+                            DetailUser["Leaderboards"] = DetailUser["Leaderboards"].AsInt32 + Setting["LeaderboardSize"].AsInt32;
+                            DetailUser["Cash"] = DetailUser["Cash"].AsInt32 + Setting["Cash"].AsInt32;
                         }
                     }
 
