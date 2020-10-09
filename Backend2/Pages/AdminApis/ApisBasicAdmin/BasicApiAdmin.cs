@@ -13,5 +13,6 @@ namespace Backend2.Pages.AdminApis.ApisBasicAdmin
         internal MongoClient Client = new MongoClient();
         internal string AdminDatabase => "Users";
         internal string AdminCollection => "Admins";
+
     }
 }

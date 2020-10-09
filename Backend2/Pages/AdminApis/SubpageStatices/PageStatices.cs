@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Backend2.Pages.AdminApis.SubpageSupport;
 using Backend2.Pages.Apis;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -19,18 +20,17 @@ namespace Backend2.Pages.AdminApis.SubpageStatices
         {
             var Statices = new BsonDocument
             {
-                { "Users", new BsonDocument{ {"Count",0 } } },
+                { "Users", 0 },
                 {"Emails",new BsonDocument{{"Send",0 },{"Register",0 } } },
-                {"BugReport" ,new BsonDocument{ { "Count",0} } },
-                {"Supports",new BsonDocument{ {"Count",0 } } },
-                {"Cash",new BsonDocument{ {"Block" ,0} ,{"Cash",0 } } }
+                {"BugReport" ,0 },
+                {"Supports",0},
+                {"Cash",0}
             };
 
             //Users
             {
-                Statices["Users"]["Count"] = await Client.GetDatabase(UsersDB).GetCollection<BsonDocument>(UsersCollection).CountDocumentsAsync("{}");
+                Statices["Users"] = await Client.GetDatabase(UsersDB).GetCollection<BsonDocument>(UsersCollection).CountDocumentsAsync("{}");
             }
-
 
             //Email 
             {
@@ -40,11 +40,11 @@ namespace Backend2.Pages.AdminApis.SubpageStatices
 
                 foreach (var item in Emails)
                 {
-                    var filter = new BsonDocument { {"AccountSetting.Email",item["Email"] } };
+                    var filter = new BsonDocument { { "AccountSetting.Email", item["Email"] } };
 
-                   var Result= await Client.GetDatabase(UsersDB).GetCollection<BsonDocument>(UsersCollection).FindAsync(filter).Result.ToListAsync();
-             
-                    if (Result.Count>=1)
+                    var Result = await Client.GetDatabase(UsersDB).GetCollection<BsonDocument>(UsersCollection).FindAsync(filter).Result.ToListAsync();
+
+                    if (Result.Count >= 1)
                     {
                         Statices["Emails"]["Register"] = Statices["Emails"]["Register"].AsInt32 + 1;
                     }
@@ -54,18 +54,31 @@ namespace Backend2.Pages.AdminApis.SubpageStatices
 
             //Bugs
             {
-                Statices["BugReport"]["Count"] = await Client.GetDatabase(UsersDB).GetCollection<BsonDocument>("Bugs").CountDocumentsAsync("{}");
+                Statices["BugReport"] = await Client.GetDatabase(UsersDB).GetCollection<BsonDocument>("Bugs").CountDocumentsAsync("{}");
             }
 
             //Support
             {
-                Statices["Supports"]["Count"] = await Client.GetDatabase(UsersDB).GetCollection<BsonDocument>("Support").CountDocumentsAsync("{}");
+                Statices["Supports"] = await SubpageSupport.SubpageSupport.SupportCount();
             }
 
             //Cash Cheack
             {
+                var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Games", 1 } } };
 
+                var Users = await Client.GetDatabase("Users").GetCollection<BsonDocument>("Users").FindAsync("{}", Option).Result.ToListAsync();
 
+                //findusers
+                foreach (var User in Users)
+                {
+                    //findgames
+                    foreach (var Studio in User["Games"].AsBsonArray)
+                    {
+                        var Option1 = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Monetiz.Cash", 1 } } };
+                        var Setting = await Client.GetDatabase(Studio.AsString).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } }, Option1).Result.SingleAsync();
+                        Statices["Cash"] = Statices["Cash"].ToInt64() + Setting["Monetiz"]["Cash"].ToInt64();
+                    }
+                }
             }
 
             return Statices.ToString();
