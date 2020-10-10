@@ -17,7 +17,7 @@ namespace Backend2.Pages.AdminApis.SubpageBugs
         {
             var Result = new BsonDocument { { "ListBugs", new BsonArray() } };
             var Option = new FindOptions<BsonDocument>() { Sort = new BsonDocument { { "Priority", -1 } } };
-            var ListBugs = await Client.GetDatabase("Users").GetCollection<BsonDocument>("Bugs").FindAsync("{}",Option).Result.ToListAsync();
+            var ListBugs = await Client.GetDatabase("Users").GetCollection<BsonDocument>("Bugs").FindAsync("{}", Option).Result.ToListAsync();
 
             if (ListBugs.Count >= 1)
             {
@@ -36,6 +36,21 @@ namespace Backend2.Pages.AdminApis.SubpageBugs
             }
 
 
+        }
+
+        [HttpDelete]
+        public async Task RemoveBug(string Token, string _id)
+        {
+            var Result = await Client.GetDatabase(AdminDatabase).GetCollection<BsonDocument>("Bugs").DeleteOneAsync(new BsonDocument { { "_id", ObjectId.Parse(_id) } });
+
+            if (Result.DeletedCount >= 1)
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
         }
     }
 }
