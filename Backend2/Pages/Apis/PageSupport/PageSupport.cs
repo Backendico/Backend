@@ -28,6 +28,15 @@ namespace Backend2.Pages.Apis.PageSupport
                 deseriledata.Add("Messages", new BsonArray());
                 deseriledata.Add("Token", ObjectId.GenerateNewId());
 
+                //push frist message to detail
+                deseriledata["Messages"].AsBsonArray.Add(new BsonDocument
+                {
+                    {"Message",deseriledata["Description"] },
+                    {"Sender",0 },
+                    {"Created",DateTime.Now }
+
+                });
+
 
                 var Update = new UpdateDefinitionBuilder<BsonDocument>().Push("Support", deseriledata);
 
@@ -137,6 +146,57 @@ namespace Backend2.Pages.Apis.PageSupport
 
             return true;
         }
-    
+
+
+        public static async Task<bool> AddMessageToSupport(string TokenSupport, string Studio, BsonDocument Detial)
+        {
+            MongoClient Client = new MongoClient();
+
+            var update = Builders<BsonDocument>.Update.Push("Support.$[f].Messages", Detial);
+
+            var arrayFilters = new[]
+            {new BsonDocumentArrayFilterDefinition<BsonDocument>(new BsonDocument("f.Token",new BsonDocument("$in",new BsonArray{ {new ObjectId(TokenSupport)} }))),};
+
+
+            var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, update, new UpdateOptions { ArrayFilters = arrayFilters });
+
+            if (result.ModifiedCount >= 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
+
+        public static async Task<bool> CloseSupport(string TokenSupport, string Studio)
+        {
+            MongoClient Client = new MongoClient();
+
+            var update = new BsonDocument
+            {
+                {"$set",new BsonDocument{ {"Support.$[f].IsOpen",false } } }
+            };
+
+            var arrayfilter = new[]
+            {
+            new BsonDocumentArrayFilterDefinition<BsonDocument>(new BsonDocument{ {"f.Token" ,new BsonDocument { { "$in",new BsonArray { ObjectId.Parse(TokenSupport) } } } } })
+            };
+
+            var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, update, new UpdateOptions { ArrayFilters = arrayfilter });
+
+            if (result.ModifiedCount >= 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
     }
 }

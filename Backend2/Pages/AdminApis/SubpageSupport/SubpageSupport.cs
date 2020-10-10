@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Backend2.Pages.AdminApis.ApisBasicAdmin;
+using Backend2.Pages.Apis.PageSupport;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
@@ -43,6 +44,7 @@ namespace Backend2.Pages.AdminApis.SubpageSupport
                     foreach (var Support in Setting)
                     {
                         Support["Support"].AsBsonDocument.Add("Creator", Games["AccountSetting"]["Token"]);
+                        Support["Support"].AsBsonDocument.Add("Studio", Studio.ToString());
                         Result["ListSupports"].AsBsonArray.Add(Support["Support"]);
                     }
 
@@ -59,9 +61,39 @@ namespace Backend2.Pages.AdminApis.SubpageSupport
                 Response.StatusCode = BadRequest().StatusCode;
             }
             return Result.ToString();
-
         }
 
+        [HttpPut]
+        public async Task AddSupportMessage(string Token, string TokenSupport, string Studio, string MessageDetail)
+        {
+            var SerilseMessage = BsonDocument.Parse(MessageDetail);
+            SerilseMessage.Add("Created", DateTime.Now);
+
+            if (await PageSupport.AddMessageToSupport(TokenSupport, Studio, SerilseMessage))
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+        }
+
+
+        [HttpDelete]
+        public async Task BlockSupport(string Token,string TokenSupport, string Studio)
+        {
+
+            if (await PageSupport.CloseSupport(TokenSupport, Studio))
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+
+        }
 
         public static async Task<int> SupportCount()
         {
