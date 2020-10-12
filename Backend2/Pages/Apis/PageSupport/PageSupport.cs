@@ -88,7 +88,7 @@ namespace Backend2.Pages.Apis.PageSupport
 
             if (await CheackToken(Token))
             {
-                var update = Builders<BsonDocument>.Update.Push("Support.$[f].Messages", BsonDocument.Parse(Detail));
+                var update = Builders<BsonDocument>.Update.Push("Support.$[f].Messages", BsonDocument.Parse(Detail).Add("Created",DateTime.Now));
 
                 var arrayFilters = new[]
                 {new BsonDocumentArrayFilterDefinition<BsonDocument>(new BsonDocument("f.Token",new BsonDocument("$in",new BsonArray{ {new ObjectId(TokenSupport)} }))),};
@@ -135,6 +135,7 @@ namespace Backend2.Pages.Apis.PageSupport
                 var SerilseSupport = new BsonDocument
                 {
                     { "Header", DeserilseDetail["Subject"]},
+                    {"Description",DeserilseDetail["Description"] },
                     {"Priority",DeserilseDetail["Priority"] },
                     {"Part", 0 },
                     { "IsReport", true}
