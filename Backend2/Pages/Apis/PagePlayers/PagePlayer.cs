@@ -42,6 +42,7 @@ namespace Backend.Controllers.Players
                     {"Language","" },
                     {"Created",DateTime.Now },
                     {"LastLogin",DateTime.Now },
+                    {"RecoveryCode",0 },
                     {"Country","" }
                 }
 
@@ -177,6 +178,39 @@ namespace Backend.Controllers.Players
             }
         }
 
+        [HttpPost]
+        public async Task SendEmailRecovery(string Token, string studio, string TokenPlayer)
+        {
+            try
+            {
+                if (await CheackToken(Token))
+                {
+                    var Filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
+                    var Update = new UpdateDefinitionBuilder<BsonDocument>().Set("Account.RecoveryCode", new Random().Next());
+
+                    var Result = await Client.GetDatabase(studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
+
+                    if (Result.ModifiedCount >= 1)
+                    {
+                        Response.StatusCode = Ok().StatusCode;
+                    }
+                    else
+                    {
+                        Response.StatusCode = BadRequest().StatusCode;
+                    }
+                }
+                else
+                {
+                    Response.StatusCode = BadRequest().StatusCode;
+                }
+            }
+            catch (Exception)
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+
+        }
+
 
         /// <summary>
         /// 1: search username
@@ -305,11 +339,11 @@ namespace Backend.Controllers.Players
                 var Filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
                 var Update = new UpdateDefinitionBuilder<BsonDocument>().Set($"Leaderboards.List", BsonDocument.Parse(DetailLeaderboard));
 
-              var Result=  await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
+                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
 
-                if (Result.MatchedCount>=1)
+                if (Result.MatchedCount >= 1)
                 {
-                Response.StatusCode = Ok().StatusCode;
+                    Response.StatusCode = Ok().StatusCode;
 
                 }
                 else
@@ -320,7 +354,7 @@ namespace Backend.Controllers.Players
             else
             {
                 Response.StatusCode = BadRequest().StatusCode;
-                
+
             }
         }
 
