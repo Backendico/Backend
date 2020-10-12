@@ -53,7 +53,7 @@ namespace Backend.Controllers.PageLeaderBoard
                 }
 
             }
-            catch (Exception )
+            catch (Exception)
             {
                 Response.StatusCode = BadRequest().StatusCode;
 
@@ -335,13 +335,13 @@ namespace Backend.Controllers.PageLeaderBoard
                     //find start and end
                     var Setting = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } }).Result.SingleAsync();
                     Result.Add("Detail", new BsonDocument
-            {
-                {"Start",Setting["Leaderboards"]["List"][NameLeaderboard]["Start"] },
-                {"End",DateTime.Now }
-            });
+                    {
+                        {"Start",Setting["Leaderboards"]["List"][NameLeaderboard]["Start"] },
+                        {"End",DateTime.Now }
+                    });
 
                     //inject to database
-                    var update1 = new UpdateDefinitionBuilder<BsonDocument>().Set($"Leaderboards.List.{NameLeaderboard}.Backups.{new Random().Next()}", Result.AsBsonDocument);
+                    var update1 = new UpdateDefinitionBuilder<BsonDocument>().Set($"Leaderboards.List.{NameLeaderboard}.Backups.{new Random().Next()}", Result.AsBsonDocument).Set($"Leaderboards.List.{NameLeaderboard}.Start",DateTime.Now);
 
                     var FinalResult = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, update1);
 
