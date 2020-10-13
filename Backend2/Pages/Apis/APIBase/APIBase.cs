@@ -67,7 +67,6 @@ namespace Backend2.Pages.Apis
 
             public ObjectId _id;
             public BsonArray Games = new BsonArray();
-
             public ModelAccountSetting AccountSetting;
 
 

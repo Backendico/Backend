@@ -31,6 +31,7 @@ namespace Backend.Controllers.PageChoiceStudioGame
                 var ModelDataBase = new BsonDocument {
                 { "_id","Setting"},
                     {"Logs",new BsonArray() },
+                    {"APIs",new BsonDocument{ {"Read",0 },{"Write" ,0 } } },
                 { "Setting",
                     new BsonDocument
                     {
