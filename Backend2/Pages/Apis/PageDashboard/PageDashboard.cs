@@ -64,11 +64,11 @@ namespace Backend2.Pages.Apis.PageDashboard
                             {"7Days",0 },
                             {"30Days",0 }
                         } },
-                        {"Leaderboards",new BsonDocument{ {"Totally",0 },{"Count" ,0} } },
-                        {"PlayersMonetiz",new BsonDocument{ {"Totally",0 }, {"Count",0 } } },
-                        {"Logs",new BsonDocument()},
-                        {"APIs",new BsonDocument() },
-                        {"Studio",new BsonDocument{ {"Totally",0 }, {"Count",0 } } },
+                        {"Leaderboards",new BsonDocument{ {"Totall",0 },{"Count" ,0} } },
+                        {"PlayersMonetiz",new BsonDocument{ {"Totall",0 }, {"Count",0 } } },
+                        {"Logs",new BsonDocument{ {"Count",0 },{"Totall",0 } } },
+                        {"APIs",new BsonDocument{ {"Count",0 },{"Totall",0 } }},
+                        {"Studio",new BsonDocument{ {"Totall",0 }, {"Count",0 } } },
                     };
 
             try
@@ -227,36 +227,82 @@ namespace Backend2.Pages.Apis.PageDashboard
 
                     }
 
-                    //recive Monetize  list
-                    var option4 = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Monetiz", 1 } } };
-
-                    var Monetize = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } }, option4).Result.SingleAsync();
-
-                    Result["Leaderboards"]["Totally"] = Monetize["Monetiz"]["Leaderboards"];
-                    Result["PlayersMonetiz"]["Totally"] = Monetize["Monetiz"]["Players"];
-
+                    //Studio
 
 
                     Response.StatusCode = Ok().StatusCode;
                     return Result.ToString();
-
-
                 }
                 else
                 {
                     Response.StatusCode = BadRequest().StatusCode;
-                    return "";
+                    return Result.ToString();
                 }
 
             }
             catch (Exception ex)
             {
                 Response.StatusCode = BadRequest().StatusCode;
-                return "";
+                return Result.ToString();
             }
 
         }
 
+        public async Task<string> Notifaction(string Token, string Studio)
+        {
+
+            BsonDocument Result = new BsonDocument
+            {
+                {"Logs",0 },
+                {"Support",0 }
+
+            };
+
+            if (await CheackToken(Token))
+            {
+
+                //Logs Notifactions
+                {
+                    var Pipe = new[]
+                    {
+                    new BsonDocument{ {"$project",new BsonDocument { {"Logs",1 } } } },
+                    new BsonDocument{ {"$unwind","$Logs" } },
+                    new BsonDocument{{"$match",new BsonDocument { {"Logs.IsNotifaction",true } } }},
+                    new BsonDocument{{"$group",new BsonDocument { {"_id","_id" },{"Logs",new BsonDocument { {"$push","$Logs" } } } } }},
+                    new BsonDocument{{"$project",new BsonDocument { {"_id",0 } ,{"Logs",new BsonDocument { {"$size", "$Logs" } } } } }}
+                };
+
+                    var CountLogs = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
+
+                    Result["Logs"] = CountLogs["Logs"];
+                }
+
+                //Support
+                var Pipe1 = new[]
+                   {
+                    new BsonDocument{ {"$project",new BsonDocument { {"Support",1 } } } },
+                    new BsonDocument{ {"$unwind","$Support" } },
+                     new BsonDocument{ {"$unwind","$Support.Messages" } },
+                    new BsonDocument{{"$match",new BsonDocument { {"Support.Messages.Sender",1} } }},
+                    new BsonDocument{{"$count","Support"}}
+                };
+
+                var CountSupport = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe1).Result.SingleAsync();
+
+                Result["Support"] = CountSupport["Support"];
+
+
+                Response.StatusCode = Ok().StatusCode;
+                return Result.ToString();
+
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+                return Result.ToString();
+
+            }
+        }
 
         /// <summary>
         /// cheack status server
