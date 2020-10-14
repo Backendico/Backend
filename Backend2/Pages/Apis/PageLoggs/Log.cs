@@ -58,6 +58,11 @@ namespace Backend2.Pages.Apis.PageLoggs
                     {"IsNotifaction", bool.Parse(IsNotifaction)}
                 };
 
+                if (DataUpdate["IsNotifaction"].AsBoolean)
+                {
+                    SignalNotifaction(Token);
+                }
+
                 var Update = new UpdateDefinitionBuilder<BsonDocument>().Push("Logs", DataUpdate);
                 await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update);
 

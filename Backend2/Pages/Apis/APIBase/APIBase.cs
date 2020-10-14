@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Backend2.Pages.Apis.SignalR;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.SignalR;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
@@ -60,7 +62,10 @@ namespace Backend2.Pages.Apis
 
         }
 
-
+        internal  void SignalNotifaction(string Token)
+        {
+            SignalR.SignalNotifaction.SendSignal(Token.ToString());
+        }
 
         public class UserModel
         {
@@ -80,6 +85,4 @@ namespace Backend2.Pages.Apis
             }
         }
     }
-
-
 }

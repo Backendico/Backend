@@ -258,13 +258,17 @@ namespace Backend2.Pages.Apis.PageDashboard
 
             };
 
-            if (await CheackToken(Token))
+            try
             {
-
-                //Logs Notifactions
+                if (await CheackToken(Token))
                 {
-                    var Pipe = new[]
+
+                    //Logs Notifactions
                     {
+                        try
+                        {
+                            var Pipe = new[]
+                            {
                     new BsonDocument{ {"$project",new BsonDocument { {"Logs",1 } } } },
                     new BsonDocument{ {"$unwind","$Logs" } },
                     new BsonDocument{{"$match",new BsonDocument { {"Logs.IsNotifaction",true } } }},
@@ -272,35 +276,58 @@ namespace Backend2.Pages.Apis.PageDashboard
                     new BsonDocument{{"$project",new BsonDocument { {"_id",0 } ,{"Logs",new BsonDocument { {"$size", "$Logs" } } } } }}
                 };
 
-                    var CountLogs = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
+                            var CountLogs = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
 
-                    Result["Logs"] = CountLogs["Logs"];
+                            Result["Logs"] = CountLogs["Logs"];
+
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }
+
+                    //Support
+                    {
+
+                        try
+                        {
+
+                        var Pipe1 = new[]
+                        {
+                            new BsonDocument{ {"$project",new BsonDocument { {"Support",1 } } } },
+                            new BsonDocument{ {"$unwind","$Support" } },
+                             new BsonDocument{{"$match",new BsonDocument { {"Support.IsOpen",true} } }},
+                            new BsonDocument{ {"$project",new BsonDocument { {"Support",new BsonDocument { { "$arrayElemAt", new BsonArray { { "$Support.Messages" }, { -1 } } } } }  } } },
+                            new BsonDocument{{"$match",new BsonDocument { {"Support.Sender",1} } }},
+                        };
+
+                        var CountSupport = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe1).Result.ToListAsync();
+
+                        Result["Support"] = CountSupport.Count;
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine(ex.Message);
+                        }
+
+                    }
+
+                    Response.StatusCode = Ok().StatusCode;
+                    return Result.ToString();
+
+                }
+                else
+                {
+                    Response.StatusCode = BadRequest().StatusCode;
+                    return Result.ToString();
+
                 }
 
-                //Support
-                var Pipe1 = new[]
-                   {
-                    new BsonDocument{ {"$project",new BsonDocument { {"Support",1 } } } },
-                    new BsonDocument{ {"$unwind","$Support" } },
-                     new BsonDocument{ {"$unwind","$Support.Messages" } },
-                    new BsonDocument{{"$match",new BsonDocument { {"Support.Messages.Sender",1} } }},
-                    new BsonDocument{{"$count","Support"}}
-                };
-
-                var CountSupport = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe1).Result.SingleAsync();
-
-                Result["Support"] = CountSupport["Support"];
-
-
-                Response.StatusCode = Ok().StatusCode;
-                return Result.ToString();
-
             }
-            else
+            catch (Exception)
             {
                 Response.StatusCode = BadRequest().StatusCode;
                 return Result.ToString();
-
             }
         }
 

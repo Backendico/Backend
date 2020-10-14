@@ -64,7 +64,7 @@ namespace Backend2.Pages.AdminApis.SubpageSupport
         }
 
         [HttpPut]
-        public async Task AddSupportMessage(string Token, string TokenSupport, string Studio, string MessageDetail)
+        public async Task AddSupportMessage(string Token,string TokenUser,string TokenSupport, string Studio, string MessageDetail)
         {
             var SerilseMessage = BsonDocument.Parse(MessageDetail);
             SerilseMessage.Add("Created", DateTime.Now);
@@ -72,6 +72,10 @@ namespace Backend2.Pages.AdminApis.SubpageSupport
             if (await PageSupport.AddMessageToSupport(TokenSupport, Studio, SerilseMessage))
             {
                 Response.StatusCode = Ok().StatusCode;
+
+                //send Signal
+                SignalNotifaction(TokenUser);
+                Debug.WriteLine(TokenUser);
             }
             else
             {
@@ -95,6 +99,7 @@ namespace Backend2.Pages.AdminApis.SubpageSupport
 
         }
 
+       
         public static async Task<int> SupportCount()
         {
 

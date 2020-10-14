@@ -1,4 +1,4 @@
-using Backend2.Pages.Apis.SignalR.PageSupport;
+using Backend2.Pages.Apis.SignalR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -50,7 +50,8 @@ namespace Backend2
                 endpoints.MapControllerRoute(name: "default",
                    pattern: "{controller}/{action}");
 
-                endpoints.MapHub<PageSupport>("/support");
+                endpoints.MapHub<SignalNotifaction>("/Signal");
+
             });
 
         }
