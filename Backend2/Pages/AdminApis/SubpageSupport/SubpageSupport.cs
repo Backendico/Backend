@@ -75,7 +75,6 @@ namespace Backend2.Pages.AdminApis.SubpageSupport
 
                 //send Signal
                 SignalNotifaction(TokenUser);
-                Debug.WriteLine(TokenUser);
             }
             else
             {

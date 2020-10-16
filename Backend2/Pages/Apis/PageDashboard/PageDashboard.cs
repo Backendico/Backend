@@ -68,7 +68,6 @@ namespace Backend2.Pages.Apis.PageDashboard
                         {"PlayersMonetiz",new BsonDocument{ {"Totall",0 }, {"Count",0 } } },
                         {"Logs",new BsonDocument{ {"Count",0 },{"Totall",0 } } },
                         {"APIs",new BsonDocument{ {"Count",0 },{"Totall",0 } }},
-                        {"Studio",new BsonDocument{ {"Totall",0 }, {"Count",0 } } },
                     };
 
             try
@@ -161,7 +160,6 @@ namespace Backend2.Pages.Apis.PageDashboard
                     //Login_30Day
                     try
                     {
-
                         var Filter8 = new BsonDocument { { "Account.LastLogin", new BsonDocument { { "$gte", DateTime.Now.AddMonths(-1) } } } };
                         var Login_30Day = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(Filter8).Result.ToListAsync();
                         Result["Logins"]["30Days"] = Login_30Day.Count;
@@ -227,7 +225,19 @@ namespace Backend2.Pages.Apis.PageDashboard
 
                     }
 
-                    //Studio
+                    //player & Leaderboard Totall
+                    try
+                    {
+                        var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Monetiz", 1 } } };
+
+                        var Monetiz = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } }, Option).Result.SingleAsync();
+                        Result["PlayersMonetiz"]["Totall"] = Monetiz["Monetiz"]["Players"];
+                        Result["Leaderboards"]["Totall"] = Monetiz["Monetiz"]["Leaderboards"];
+                    }
+                    catch (Exception)
+                    {
+
+                    }
 
 
                     Response.StatusCode = Ok().StatusCode;
@@ -240,7 +250,7 @@ namespace Backend2.Pages.Apis.PageDashboard
                 }
 
             }
-            catch (Exception ex)
+            catch (Exception )
             {
                 Response.StatusCode = BadRequest().StatusCode;
                 return Result.ToString();
@@ -292,8 +302,8 @@ namespace Backend2.Pages.Apis.PageDashboard
                         try
                         {
 
-                        var Pipe1 = new[]
-                        {
+                            var Pipe1 = new[]
+                            {
                             new BsonDocument{ {"$project",new BsonDocument { {"Support",1 } } } },
                             new BsonDocument{ {"$unwind","$Support" } },
                              new BsonDocument{{"$match",new BsonDocument { {"Support.IsOpen",true} } }},
@@ -301,9 +311,9 @@ namespace Backend2.Pages.Apis.PageDashboard
                             new BsonDocument{{"$match",new BsonDocument { {"Support.Sender",1} } }},
                         };
 
-                        var CountSupport = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe1).Result.ToListAsync();
+                            var CountSupport = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe1).Result.ToListAsync();
 
-                        Result["Support"] = CountSupport.Count;
+                            Result["Support"] = CountSupport.Count;
                         }
                         catch (Exception ex)
                         {
