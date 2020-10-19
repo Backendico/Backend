@@ -30,7 +30,5 @@ namespace Backend2.Pages.Apis.UserAPI.AUT.Login
             return Result.ToString();
         }
 
-
-
     }
 }

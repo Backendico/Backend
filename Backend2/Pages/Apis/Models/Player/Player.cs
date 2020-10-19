@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net.Mail;
 using System.Threading.Tasks;
 
 namespace Backend2.Pages.Apis.Models.Player
@@ -298,6 +299,28 @@ namespace Backend2.Pages.Apis.Models.Player
             }
         }
 
+        public async Task<bool> UnBanPlayer(string Studio, string Token)
+        {
+            if (await CheackToken(Token))
+            {
+                var filter = new BsonDocument { { "Account.Token", ObjectId.Parse(Token) } };
+                var Update = new BsonDocument { { "Account.IsBan", false } };
+                var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(filter, Update);
+                if (result.ModifiedCount >= 1)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public async Task<BsonDocument> LoginPlayer(string Token, string Studio, string TokenPlayer)
         {
             if (await CheackToken(Token))
@@ -310,6 +333,152 @@ namespace Backend2.Pages.Apis.Models.Player
             else
             {
                 return new BsonDocument();
+            }
+        }
+
+        public async Task<bool> AddAvatar(string Token, string Studio, string TokenPlayer, string Link)
+        {
+            if (await CheackToken(Token))
+            {
+                try
+                {
+                    _ = new Uri(Link);
+
+                    var Update = new UpdateDefinitionBuilder<BsonDocument>().Set<string>("Account.Avatar", Link);
+                    var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } }, Update);
+
+                    if (Result.ModifiedCount >= 1)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> AddLanguage(string Token, string Studio, string TokenPlayer, string Language)
+        {
+            if (await CheackToken(Token))
+            {
+                try
+                {
+                    var Update = new UpdateDefinitionBuilder<BsonDocument>().Set<string>("Account.Language", Language);
+                    var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } }, Update);
+
+                    if (Result.ModifiedCount >= 1)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> AddCountry(string Token, string Studio, string TokenPlayer, string Country)
+        {
+            if (await CheackToken(Token))
+            {
+                try
+                {
+                    var Update = new UpdateDefinitionBuilder<BsonDocument>().Set<string>("Account.Country", Country);
+                    var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } }, Update);
+
+                    if (Result.ModifiedCount >= 1)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> AddUsername(string Token, string Studio, string TokenPlayer, string Username)
+        {
+            if (await CheackToken(Token) && await CheackUsernamePlayer(Studio, Username))
+            {
+                var Update = new UpdateDefinitionBuilder<BsonDocument>().Set<string>("Account.Username", Username);
+                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } }, Update);
+
+                if (Result.ModifiedCount >= 1)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+
+        public async Task<bool> AddEmail(string Token, string Studio, string TokenPlayer, string Email)
+        {
+            if (await CheackToken(Token) && !await CheackEmailPlayer(Studio, Email))
+            {
+                try
+                {
+                    _ = new MailAddress(Email);
+                    var Update = new UpdateDefinitionBuilder<BsonDocument>().Set<string>("Account.Email", Email);
+                    var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } }, Update);
+
+                    if (Result.ModifiedCount >= 1)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
             }
         }
     }

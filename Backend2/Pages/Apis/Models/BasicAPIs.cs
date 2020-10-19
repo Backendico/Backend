@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
 using System.Threading.Tasks;
 
 namespace Backend2.Pages.Apis.Models
@@ -35,6 +36,7 @@ namespace Backend2.Pages.Apis.Models
             }
 
         }
+
 
         /// <summary>
         /// cheack Username Users
@@ -135,6 +137,28 @@ namespace Backend2.Pages.Apis.Models
             }
         }
 
+        internal async Task<bool> CheackEmailPlayer(string Studio, string Email)
+        {
+            try
+            {
+                _ = new MailAddress(Email);
+
+                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(new BsonDocument { { "Account.Email", Email } }).Result.ToListAsync();
+
+                if (Result.Count >= 1)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
 
 
         public class UserModel
