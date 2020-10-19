@@ -178,22 +178,32 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
 
         public async Task<bool> Add(string Token, string Studio, string TokenPlayer, string NameLeaderboard, string Value)
         {
-            if (await CheackToken(Token))
+            try
             {
-                var Filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
-                var Update = new UpdateDefinitionBuilder<BsonDocument>().Set($"Leaderboards.List.{NameLeaderboard}", long.Parse(Value));
-                var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
-                if (result.ModifiedCount >= 1)
+                int.Parse(Value);
+
+                if (await CheackToken(Token))
                 {
-                    return true;
+                    var Filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
+                    var Update = new UpdateDefinitionBuilder<BsonDocument>().Set($"Leaderboards.List.{NameLeaderboard}", long.Parse(Value));
+                    var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
+                    if (result.ModifiedCount >= 1)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
                 else
                 {
                     return false;
                 }
             }
-            else
+            catch (Exception)
             {
+
                 return false;
             }
         }
@@ -396,8 +406,37 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
 
         }
 
+        public async Task<BsonDocument> SettingLeaderboard(string Token, string Studio, string NameLeaderboard)
+        {
+            if (await CheackToken(Token))
+            {
+                var Pipe = new[]
+                {
+                    new BsonDocument{ {"$project",new BsonDocument { {"Leaderboards",$"$Leaderboards.List.{NameLeaderboard}" } } } },
+                    new BsonDocument{{"$project",new BsonDocument { {"_id",0 },{ "Leaderboards.Backups", 0 } } }}
+                };
 
-    
+                return await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
+            }
+            else
+            {
+                return new BsonDocument();
+            }
+        }
+
+        public async Task<BsonDocument> RecivePlayerLeaderboard(string Token, string Studio, string TokenPlayer)
+        {
+            if (await CheackToken(Token))
+            {
+                var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Leaderboards", 1 } ,{"_id",0 } } };
+                return await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } }, Option).Result.SingleAsync();
+            }
+            else
+            {
+                return new BsonDocument();
+            }
+        }
+
 
     }
 }
