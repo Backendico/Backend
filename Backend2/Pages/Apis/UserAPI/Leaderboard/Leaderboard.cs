@@ -29,6 +29,11 @@ namespace Backend2.Pages.Apis.UserAPI.Leaderboard
 
         }
 
+        public void RemovePlayer()
+        {
+
+        }
+
         [HttpPost]
         public void RecivePlayerValue()
         {

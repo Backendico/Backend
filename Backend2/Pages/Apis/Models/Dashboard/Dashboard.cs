@@ -1,21 +1,15 @@
-﻿using System;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Backend2.Pages.Apis.PageDashboard;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson;
-using MongoDB.Driver;
 
-namespace Backend2.Pages.Apis.UserAPI.AdminAPI
+namespace Backend2.Pages.Apis.Models.Dashboard
 {
-    [Controller]
-    public class AdminAPI : UserAPIBase
+    public class Dashboard : BasicAPIs
     {
-
-        [HttpPost]
-        public async Task<string> ReciveStatices(string Token, string Studio)
+        public async Task<BsonDocument> ReciveDetail(string Token, string Studio)
         {
             var Result = new BsonDocument
                     {
@@ -36,12 +30,11 @@ namespace Backend2.Pages.Apis.UserAPI.AdminAPI
                         {"Logs",new BsonDocument{ {"Count",0 },{"Totall",0 } } },
                         {"APIs",new BsonDocument{ {"Count",0 },{"Totall",0 } }},
                     };
-            
+
             try
             {
                 if (await CheackToken(Token))
                 {
-
                     //player_24hours
                     try
                     {
@@ -207,67 +200,101 @@ namespace Backend2.Pages.Apis.UserAPI.AdminAPI
                     }
 
 
-                    Response.StatusCode = Ok().StatusCode;
-                    return Result.ToString();
+                    return Result;
                 }
                 else
                 {
-                    Response.StatusCode = BadRequest().StatusCode;
-                    return Result.ToString();
+                    return new BsonDocument();
                 }
 
             }
             catch (Exception)
             {
-                Response.StatusCode = BadRequest().StatusCode;
-                return Result.ToString();
+                return new BsonDocument();
+            }
+
+        }
+
+        public async Task<BsonDocument> Notifaction(string Token, string Studio)
+        {
+            BsonDocument Result = new BsonDocument
+            {
+                {"Logs",0 },
+                {"Support",0 }
+            };
+
+            try
+            {
+                if (await CheackToken(Token))
+                {
+
+                    //Logs Notifactions
+                    {
+                        try
+                        {
+                            var Pipe = new[]
+                            {
+                                new BsonDocument{ {"$project",new BsonDocument { {"Logs",1 } } } },
+                                new BsonDocument{ {"$unwind","$Logs" } },
+                                new BsonDocument{{"$match",new BsonDocument { {"Logs.IsNotifaction",true } } }},
+                                new BsonDocument{{"$group",new BsonDocument { {"_id","_id" },{"Logs",new BsonDocument { {"$push","$Logs" } } } } }},
+                                new BsonDocument{{"$project",new BsonDocument { {"_id",0 } ,{"Logs",new BsonDocument { {"$size", "$Logs" } } } } }}
+                            };
+
+                            var CountLogs = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
+
+                            Result["Logs"] = CountLogs["Logs"];
+
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }
+
+                    //Support
+                    {
+
+                        try
+                        {
+
+                            var Pipe1 = new[]
+                            {
+                            new BsonDocument{ {"$project",new BsonDocument { {"Support",1 } } } },
+                            new BsonDocument{ {"$unwind","$Support" } },
+                             new BsonDocument{{"$match",new BsonDocument { {"Support.IsOpen",true} } }},
+                            new BsonDocument{ {"$project",new BsonDocument { {"Support",new BsonDocument { { "$arrayElemAt", new BsonArray { { "$Support.Messages" }, { -1 } } } } }  } } },
+                            new BsonDocument{{"$match",new BsonDocument { {"Support.Sender",1} } }},
+                            };
+
+                            var CountSupport = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe1).Result.ToListAsync();
+
+                            Result["Support"] = CountSupport.Count;
+                        }
+                        catch (Exception)
+                        {
+                        }
+
+                    }
+
+                    return Result;
+                }
+                else
+                {
+                    return new BsonDocument();
+                }
+
+            }
+            catch (Exception)
+            {
+                return new BsonDocument();
             }
         }
 
-        public void ResetLeaderboard()
+
+        public bool CheackStatusServer()
         {
-
+            return true;
         }
-
-        public void AddLog()
-        {
-
-        }
-
-        public void ReciveStatusServer()
-        {
-
-        }
-
-        public void ReciveStudioSetting()
-        {
-
-        }
-
-        public void DeletePlayer()
-        {
-
-        }
-
-        public void BanPlayer()
-        {
-
-        }
-        public void SearchPlayer()
-        {
-
-        }
-
-        public void ReciveBackups()
-        {
-
-        }
-
-        public void SaveLeaderboard()
-        {
-
-        }
-
 
     }
 }

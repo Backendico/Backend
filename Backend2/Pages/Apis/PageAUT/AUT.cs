@@ -1,4 +1,5 @@
 ﻿using Backend2.Pages.Apis;
+using Backend2.Pages.Apis.Models.AUT;
 using Backend2.Pages.Apis.PageLoggs;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
@@ -14,9 +15,10 @@ namespace Backend.Controllers
     [Controller]
     public class AUT : APIBase
     {
+        Backend2.Pages.Apis.Models.AUT.AUT BaseAUT = new Backend2.Pages.Apis.Models.AUT.AUT();
+
         #region posts
 
-        [HttpPost]
         /// <summary>
         /// Register new User
         /// </summary>
@@ -33,42 +35,22 @@ namespace Backend.Controllers
         /// </item>
         /// </list>
         /// </returns>
+        [HttpPost]
         public async Task<string> Register(string Username, string Email, string Password, string Phone)
         {
-            var result = "";
-
-            if (await CheackUsername(Username) != true && await CheackEmail(Email) != true && Password.Length >= 6)
+            var Result = await BaseAUT.Register(Username, Email, Password, Phone);
+            if (Result.Length >= 1)
             {
-                UserModel ModelUser = new UserModel
-                {
-                    _id = ObjectId.GenerateNewId(),
-                    AccountSetting = new UserModel.ModelAccountSetting
-                    {
-                        Username = Username,
-                        Password = Password,
-                        Email = Email,
-                        Phone = Phone,
-                    }
-                    
-                };
-
-
-                await Client.GetDatabase(UsersDB).GetCollection<UserModel>(UsersCollection).InsertOneAsync(ModelUser);
-
                 Response.StatusCode = Ok().StatusCode;
-
-                return ModelUser.AccountSetting.Token;
             }
             else
             {
-
                 Response.StatusCode = BadRequest().StatusCode;
-                return result;
             }
+            return Result;
         }
 
 
-        [HttpPost]
         /// <summary>
         /// Login User with <para  >  Username </para> <para  >  Password </para>
         /// </summary>
@@ -82,72 +64,25 @@ namespace Backend.Controllers
         /// </item>
         /// </list>
         /// </returns>
+        [HttpPost]
         public async Task<string> Login(string Username, string Password)
         {
-            var filter = new BsonDocument { { "AccountSetting.Username", Username }, { "AccountSetting.Password", Password } };
-            var Token = "";
-            var Result = await Client.GetDatabase(UsersDB).GetCollection<BsonDocument>(UsersCollection).FindAsync(filter).Result.SingleAsync();
-            try
+            var Result = await BaseAUT.Login(Username, Password);
+
+            if (Result.Length >= 1)
             {
-                Token = Result["AccountSetting"]["Token"].AsString;
                 Response.StatusCode = Ok().StatusCode;
-
-                
-                return Token;
-            }
-            catch (Exception)
-            {
-                Response.StatusCode = BadRequest().StatusCode;
-                return Token;
-            }
-        }
-
-
-        [HttpPost]
-        /// <summary>
-        /// 1: vote to placess
-        /// 2: return vote place
-        /// </summary>
-        /// <returns>
-        /// <list type="bullet">
-        /// <item> Count vote  </item>
-        /// </list>
-        /// </returns>
-        public async Task<int> VoteToBuild(string Token, string Vote)
-        {
-            if (await CheackToken(Token))
-            {
-                //vote
-                var Filterusers = new BsonDocument { { "AccountSetting.Token", Token } };
-                var Update = new UpdateDefinitionBuilder<BsonDocument>();
-
-                await Client.GetDatabase(UsersDB).GetCollection<BsonDocument>(UsersCollection).UpdateOneAsync(Filterusers, Update.Set($"AccountSetting.Votes.{Vote}", true));
-
-
-                //find and return count vote
-
-                var filterfind = new BsonDocument { { $"AccountSetting.Votes.{Vote}", true } };
-
-                var CountVote = await Client.GetDatabase(UsersDB).GetCollection<BsonDocument>(UsersCollection).FindAsync(filterfind);
-
-                Response.StatusCode = Ok().StatusCode;
-
-                return CountVote.ToList().Count;
             }
             else
             {
-
                 Response.StatusCode = BadRequest().StatusCode;
-                return 0;
             }
 
+            return Result;
         }
 
-        #endregion
 
-        #region Internal methods
 
-        [HttpPost]
         /// <summary>
         /// cheack Username
         /// </summary>
@@ -156,19 +91,17 @@ namespace Backend.Controllers
         /// if username find <see langword="true"/>
         /// if username notfind <see langword="false"/>
         /// </returns>
+        [HttpPost]
         public async Task<bool> CheackUsername(string Username)
         {
-            try
+            if (await BaseAUT.CheackUsername(Username))
             {
-                var filter = new BsonDocument { { "AccountSetting.Username", Username } };
-
-                var Result = await Client.GetDatabase("Users").GetCollection<BsonDocument>("Users").Find(filter).SingleAsync();
-
-                _ = Result.ElementCount >= 1;
+                Response.StatusCode = Ok().StatusCode;
                 return true;
             }
-            catch (Exception)
+            else
             {
+                Response.StatusCode = BadRequest().StatusCode;
                 return false;
             }
         }
