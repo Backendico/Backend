@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace Backend.Controllers
 {
     [Controller]
-    public class AUT : APIBase
+    public class AUT : ControllerBase
     {
         Backend2.Pages.Apis.Models.AUT.AUT BaseAUT = new Backend2.Pages.Apis.Models.AUT.AUT();
 

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace Backend.Controllers.Players
 {
     [Controller]
-    public class PagePlayer : APIBase
+    public class PagePlayer : ControllerBase
     {
         Player player = new Player();
 
@@ -107,7 +107,6 @@ namespace Backend.Controllers.Players
             {
                 Response.StatusCode = BadRequest().StatusCode;
             }
-
         }
 
 

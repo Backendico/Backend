@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Backend2.Pages.Apis.PageDashboard
 {
     [Controller]
-    public class PageDashboard : APIBase
+    public class PageDashboard : ControllerBase
     {
         Dashboard Dashboard = new Dashboard();
 

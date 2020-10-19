@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Backend2.Pages.Apis.Models.Logs;
+using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
@@ -13,69 +14,36 @@ using System.Threading.Tasks;
 namespace Backend2.Pages.Apis.PageLoggs
 {
     [Controller]
-    public class Log : APIBase
+    public class Log : ControllerBase
     {
+        Logs Logs = new Logs();
 
         [HttpPost]
         public async Task<string> ReciveLogs(string Token, string Studio, string Count)
         {
-            if (await CheackToken(Token))
+            var result = await Logs.ReciveLogs(Token, Studio, Count);
+            if (result.ElementCount >= 1)
             {
-                var Pipe = new BsonDocument[]
-                {
-                    new BsonDocument{ {"$unwind","$Logs" } },
-                    new BsonDocument{{"$sort",new BsonDocument { { "Logs.Time", -1 } } }},
-                    new BsonDocument{ {"$limit",int.Parse(Count )} },
-                    new BsonDocument{{"$group",new BsonDocument { {"_id","$_id" },{"Details",new BsonDocument { {"$push","$Logs" } } } } }}
-                };
-
-
-                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
-
                 Response.StatusCode = Ok().StatusCode;
-                return Result.ToString();
             }
             else
             {
                 Response.StatusCode = BadRequest().StatusCode;
-                return "";
             }
 
+            return result.ToString();
         }
 
         [HttpPost]
-        public async Task<string> AddLog(string Token, string Studio, string Header, string Description, string detail, string IsNotifaction)
+        public async Task AddLog(string Token, string Studio, string Header, string Description, string detail, string IsNotifaction)
         {
-            if (await CheackToken(Token))
+            if (await Logs.AddLog(Token, Studio, Header, Description, detail, IsNotifaction))
             {
-
-                var DataUpdate = new BsonDocument
-                {
-                    { "Header",Header},
-                    {"Description",Description },
-                    {"Time",DateTime.Now },
-                    {"Detail",BsonDocument.Parse(detail) },
-                    {"IsNotifaction", bool.Parse(IsNotifaction)}
-                };
-
-                if (DataUpdate["IsNotifaction"].AsBoolean)
-                {
-                    SignalNotifaction(Token);
-                }
-
-                var Update = new UpdateDefinitionBuilder<BsonDocument>().Push("Logs", DataUpdate);
-                await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update);
-
                 Response.StatusCode = Ok().StatusCode;
-                return "";
-
             }
             else
             {
                 Response.StatusCode = BadRequest().StatusCode;
-
-                return "";
-
             }
         }
 
@@ -83,23 +51,16 @@ namespace Backend2.Pages.Apis.PageLoggs
         [HttpDelete]
         public async Task DeleteLog(string Token, string Studio, string Detail)
         {
-            if (await CheackToken(Token))
+            if (await Logs.DeleteLog(Token, Studio, Detail))
             {
-
-                var DataUpdate = BsonDocument.Parse(Detail);
-
-                var Update = new UpdateDefinitionBuilder<BsonDocument>().Pull("Logs", DataUpdate);
-                await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update);
-
                 Response.StatusCode = Ok().StatusCode;
             }
             else
             {
                 Response.StatusCode = BadRequest().StatusCode;
             }
-
         }
 
-        
+
     }
 }

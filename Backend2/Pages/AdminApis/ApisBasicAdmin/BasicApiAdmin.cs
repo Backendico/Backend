@@ -19,8 +19,5 @@ namespace Backend2.Pages.AdminApis.ApisBasicAdmin
         {
             Apis.SignalR.SignalNotifaction.SendSignal(Token.ToString());
         }
-
-
-
     }
 }

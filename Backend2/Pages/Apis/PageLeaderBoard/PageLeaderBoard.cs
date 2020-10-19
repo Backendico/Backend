@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Backend.Controllers.PageLeaderBoard
 {
     [Controller]
-    public class PageLeaderBoard : APIBase
+    public class PageLeaderBoard : ControllerBase
     {
         Leaderboard LeaderboardModel = new Leaderboard();
 
