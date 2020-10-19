@@ -3,6 +3,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -273,5 +274,28 @@ namespace Backend2.Pages.Apis.Models.Player
 
             }
         }
+
+        public async Task<bool> BanPlayer(string Studio, string Token)
+        {
+            if (await CheackToken(Token))
+            {
+                var filter = new BsonDocument { { "Account.Token", ObjectId.Parse(Token) } };
+                var Update = new BsonDocument { { "Account.IsBan", true } };
+                var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(filter, Update);
+                if (result.ModifiedCount >= 1)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
     }
 }

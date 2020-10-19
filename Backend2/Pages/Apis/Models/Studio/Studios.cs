@@ -205,5 +205,20 @@ namespace Backend2.Pages.Apis.Models.Studio
                 return new BsonDocument();
             }
         }
+
+        public async Task<BsonDocument> ReciveSetting(string Token, string Studio)
+        {
+            if (await CheackToken(Token))
+            {
+                var Option = new FindOptions<BsonDocument>() {Projection=new BsonDocument { {"Setting",1 } } };
+                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } },Option).Result.SingleAsync();
+                return Result;
+            }
+            else
+            {
+                return new BsonDocument();
+            }
+        }
+
     }
 }

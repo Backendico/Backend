@@ -13,6 +13,11 @@ namespace Backend2.Pages.Apis.Models
         internal string UsersDB => "Users";
         internal string UsersCollection => "Users";
 
+        /// <summary>
+        /// cheack tokens Users
+        /// </summary>
+        /// <param name="Token"></param>
+        /// <returns></returns>
         public async Task<bool> CheackToken(string Token)
         {
             var filter = new BsonDocument { { "AccountSetting.Token", Token } };
@@ -31,7 +36,11 @@ namespace Backend2.Pages.Apis.Models
 
         }
 
-
+        /// <summary>
+        /// cheack Username Users
+        /// </summary>
+        /// <param name="Username"></param>
+        /// <returns></returns>
         public async Task<bool> CheackUsername(string Username)
         {
             try
@@ -77,6 +86,10 @@ namespace Backend2.Pages.Apis.Models
 
         }
 
+        /// <summary>
+        /// Send Signal notifaction
+        /// </summary>
+        /// <param name="Token"></param>
         internal void SignalNotifaction(string Token)
         {
             SignalR.SignalNotifaction.SendSignal(Token.ToString());
@@ -141,6 +154,5 @@ namespace Backend2.Pages.Apis.Models
                 public string Token = ObjectId.GenerateNewId().ToString();
             }
         }
-
     }
 }
