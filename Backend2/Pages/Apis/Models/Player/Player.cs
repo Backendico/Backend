@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -297,5 +298,19 @@ namespace Backend2.Pages.Apis.Models.Player
             }
         }
 
+        public async Task<BsonDocument> LoginPlayer(string Token, string Studio, string TokenPlayer)
+        {
+            if (await CheackToken(Token))
+            {
+                var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Account", 1 } } };
+                var Player = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } }, Option).Result.SingleAsync();
+
+                return Player;
+            }
+            else
+            {
+                return new BsonDocument();
+            }
+        }
     }
 }

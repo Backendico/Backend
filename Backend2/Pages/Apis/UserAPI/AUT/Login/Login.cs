@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Backend2.Pages.Apis.Models.Player;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,20 +11,26 @@ namespace Backend2.Pages.Apis.UserAPI.AUT.Login
     [Controller]
     public class Login : UserAPIBase
     {
-        public void Token()
-        {
+        Player Player = new Player();
 
+        /// <summary>
+        /// Return PlayerAccount
+        /// </summary>
+        public async Task<string> Token(string Token, string Studio, string TokenPlayer)
+        {
+            var Result = await Player.LoginPlayer(Token, Studio, TokenPlayer);
+            if (Result.ElementCount >= 1)
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+            return Result.ToString();
         }
 
-        public void UsernamePassword()
-        {
 
-        }
-
-        public void Email()
-        {
-
-        }
 
     }
 }

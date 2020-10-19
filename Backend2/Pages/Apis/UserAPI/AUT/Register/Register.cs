@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Backend2.Pages.Apis.Models.Player;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,25 +11,24 @@ namespace Backend2.Pages.Apis.UserAPI.AUT.Register
     [Controller]
     public class Register : UserAPIBase
     {
-        [HttpPost]
-        public Task<string> Token()
-        {
-            return Task.FromResult("");
-        }
-
+        Player Player = new Player();
 
         [HttpPost]
-        public Task<string> UsernamePassword()
+        public async Task<string> Token(string Token, string Studio, string Username, string Password)
         {
-            return Task.FromResult("");
-        }
+            var Result = await Player.CreatPlayer(Token, Studio, Username, Password);
 
-        [HttpPost]
-        public Task<string> Email()
-        {
-            return Task.FromResult("");
-        }
+            if (Result.Length >= 1)
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
 
+            return Result;
+        }
 
     }
 }
