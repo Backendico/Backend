@@ -71,7 +71,6 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
             }
         }
 
-
         /// <summary>
         /// Cheack Leaderboard Name
         /// </summary>

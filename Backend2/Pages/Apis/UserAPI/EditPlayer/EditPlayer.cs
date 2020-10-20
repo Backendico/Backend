@@ -96,9 +96,9 @@ namespace Backend2.Pages.Apis.UserAPI.EditPlayer
 
 
         [HttpPost]
-        public async Task Ban(string Studio, string Token)
+        public async Task Ban(string Studio, string Token,string TokenPlayer)
         {
-            if (await Player.BanPlayer(Studio, Token))
+            if (await Player.BanPlayer(Studio, Token,TokenPlayer))
             {
                 Response.StatusCode = Ok().StatusCode;
             }
@@ -109,9 +109,9 @@ namespace Backend2.Pages.Apis.UserAPI.EditPlayer
         }
 
         [HttpPost]
-        public async Task UnBan(string Studio, string Token)
+        public async Task UnBan(string Studio, string Token,string TokenPlayer)
         {
-            if (await Player.UnBanPlayer(Studio, Token))
+            if (await Player.UnBanPlayer(Studio, Token,TokenPlayer))
             {
                 Response.StatusCode = Ok().StatusCode;
             }

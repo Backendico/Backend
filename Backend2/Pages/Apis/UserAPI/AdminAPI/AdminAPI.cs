@@ -40,7 +40,7 @@ namespace Backend2.Pages.Apis.UserAPI.AdminAPI
         }
 
         [HttpPost]
-        public async void ResetLeaderboard(string Token, string Studio, string NameLeaderboard)
+        public async Task ResetLeaderboard(string Token, string Studio, string NameLeaderboard)
         {
             if (await Leaderboard.Reset(Token, Studio, NameLeaderboard))
             {
@@ -53,7 +53,7 @@ namespace Backend2.Pages.Apis.UserAPI.AdminAPI
         }
 
         [HttpPost]
-        public async void AddLog(string Token, string Studio, string Header, string Description, string detail, string IsNotifaction)
+        public async Task AddLog(string Token, string Studio, string Header, string Description, string detail, string IsNotifaction)
         {
             if (await Log.AddLog(Token, Studio, Header, Description, detail, IsNotifaction))
             {
@@ -79,7 +79,7 @@ namespace Backend2.Pages.Apis.UserAPI.AdminAPI
         }
 
         [HttpPost]
-        public async void ReciveStudioSetting(string Token, string Studio)
+        public async Task ReciveStudioSetting(string Token, string Studio)
         {
             var Result = await this.Studio.ReciveSetting(Token, Studio);
             if (Result.ElementCount >= 1)
@@ -92,7 +92,8 @@ namespace Backend2.Pages.Apis.UserAPI.AdminAPI
             }
         }
 
-        public async void DeletePlayer(string Token, string Studio, string TokenPlayer)
+        [HttpDelete]
+        public async Task DeletePlayer(string Token, string Studio, string TokenPlayer)
         {
             if (await Player.DeletePlayer(Token, Studio, TokenPlayer))
             {
@@ -104,18 +105,6 @@ namespace Backend2.Pages.Apis.UserAPI.AdminAPI
             }
         }
 
-        public async void BanPlayer(string Studio, string Token)
-        {
-            if (await Player.BanPlayer(Studio, Token))
-            {
-                Response.StatusCode = Ok().StatusCode;
-            }
-            else
-            {
-                Response.StatusCode = BadRequest().StatusCode;
-            }
-
-        }
 
         [HttpPost]
         public async Task<string> SearchPlayerToken(string Token,string Studio,string TokenPlayer)
@@ -181,7 +170,7 @@ namespace Backend2.Pages.Apis.UserAPI.AdminAPI
         }
 
         [HttpPost]
-        public async void BackupLeaderboard(string Token,string Studio,string NameLeaderboard)
+        public async Task BackupLeaderboard(string Token,string Studio,string NameLeaderboard)
         {
             if (await Leaderboard.Backup(Token,Studio,NameLeaderboard))
             {

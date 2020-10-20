@@ -277,11 +277,11 @@ namespace Backend2.Pages.Apis.Models.Player
             }
         }
 
-        public async Task<bool> BanPlayer(string Studio, string Token)
+        public async Task<bool> BanPlayer(string Studio, string Token,string TokenPlayer)
         {
             if (await CheackToken(Token))
             {
-                var filter = new BsonDocument { { "Account.Token", ObjectId.Parse(Token) } };
+                var filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
                 var Update = new BsonDocument { { "Account.IsBan", true } };
                 var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(filter, Update);
                 if (result.ModifiedCount >= 1)
@@ -299,11 +299,11 @@ namespace Backend2.Pages.Apis.Models.Player
             }
         }
 
-        public async Task<bool> UnBanPlayer(string Studio, string Token)
+        public async Task<bool> UnBanPlayer(string Studio, string Token,string TokenPlayer)
         {
             if (await CheackToken(Token))
             {
-                var filter = new BsonDocument { { "Account.Token", ObjectId.Parse(Token) } };
+                var filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
                 var Update = new BsonDocument { { "Account.IsBan", false } };
                 var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(filter, Update);
                 if (result.ModifiedCount >= 1)
