@@ -108,11 +108,10 @@ namespace Backend2.Pages.Apis.UserAPI.EditPlayer
             }
         }
 
-
         [HttpPost]
-        public async Task Ban(string Studio, string Token,string TokenPlayer)
+        public async Task AddNickname(string Token, string Studio, string TokenPlayer, string Nickname)
         {
-            if (await Player.BanPlayer(Studio, Token,TokenPlayer))
+            if (await Player.AddNickname(Token, Studio, TokenPlayer, Nickname))
             {
                 Response.StatusCode = Ok().StatusCode;
             }
@@ -123,9 +122,22 @@ namespace Backend2.Pages.Apis.UserAPI.EditPlayer
         }
 
         [HttpPost]
-        public async Task UnBan(string Studio, string Token,string TokenPlayer)
+        public async Task Ban(string Studio, string Token, string TokenPlayer)
         {
-            if (await Player.UnBanPlayer(Studio, Token,TokenPlayer))
+            if (await Player.BanPlayer(Studio, Token, TokenPlayer))
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+        }
+
+        [HttpPost]
+        public async Task UnBan(string Studio, string Token, string TokenPlayer)
+        {
+            if (await Player.UnBanPlayer(Studio, Token, TokenPlayer))
             {
                 Response.StatusCode = Ok().StatusCode;
             }

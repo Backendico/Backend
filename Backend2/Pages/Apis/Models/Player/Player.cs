@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Mail;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Backend2.Pages.Apis.Models.Player
@@ -503,6 +504,28 @@ namespace Backend2.Pages.Apis.Models.Player
                 return false;
             }
         }
-    
+
+        public async Task<bool> AddNickname(string Token, string Studio, string TokenPlayer, string Nickname)
+        {
+            if (await CheackToken(Token))
+            {
+                var Filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
+                var Update = Builders<BsonDocument>.Update.Set("Account.Name", Nickname);
+                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
+                if (Result.ModifiedCount >= 1)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
     }
 }
