@@ -26,6 +26,7 @@ namespace Backend2.Pages.Apis.Models.Player
                     { "Name",""},
                     {"Avatar","" },
                     {"Email" ,""},
+                    {"Phone","" },
                     { "Token",TokenPlayer},
                     {"Username",""},
                     {"Password","" },
@@ -520,6 +521,31 @@ namespace Backend2.Pages.Apis.Models.Player
                 {
                     return false;
                 }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> AddPhoneNumber(string Token, string Studio, string TokenPlayer, string PhoneNumber)
+        {
+            if (await CheackToken(Token))
+            {
+
+                var Filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
+                var Update = Builders<BsonDocument>.Update.Set("Account.Phone", PhoneNumber);
+                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
+
+                if (Result.ModifiedCount >= 1)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+
             }
             else
             {
