@@ -96,6 +96,20 @@ namespace Backend2.Pages.Apis.UserAPI.EditPlayer
 
 
         [HttpPost]
+        public async Task AddPassword(string Token, string Studio, string TokenPlayer, string OldPassword, string NewPassword)
+        {
+            if (await Player.AddPassword(Token, Studio, TokenPlayer, OldPassword, NewPassword))
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+        }
+
+
+        [HttpPost]
         public async Task Ban(string Studio, string Token,string TokenPlayer)
         {
             if (await Player.BanPlayer(Studio, Token,TokenPlayer))

@@ -107,10 +107,10 @@ namespace Backend2.Pages.Apis.UserAPI.AdminAPI
 
 
         [HttpPost]
-        public async Task<string> SearchPlayerToken(string Token,string Studio,string TokenPlayer)
+        public async Task<string> SearchPlayerToken(string Token, string Studio, string TokenPlayer)
         {
             var result = await Player.SearchToken(Token, Studio, TokenPlayer);
-            if (result.ElementCount>=1)
+            if (result.ElementCount >= 1)
             {
                 Response.StatusCode = Ok().StatusCode;
             }
@@ -155,10 +155,10 @@ namespace Backend2.Pages.Apis.UserAPI.AdminAPI
         }
 
         [HttpPost]
-        public async Task<string> ReciveBackups(string Token,string Studio,string NameLeaderboard)
+        public async Task<string> ReciveBackups(string Token, string Studio, string NameLeaderboard)
         {
             var Result = await Leaderboard.ReciveBackup(Token, Studio, NameLeaderboard);
-            if (Result.ElementCount>=1)
+            if (Result.ElementCount >= 1)
             {
                 Response.StatusCode = Ok().StatusCode;
             }
@@ -170,9 +170,9 @@ namespace Backend2.Pages.Apis.UserAPI.AdminAPI
         }
 
         [HttpPost]
-        public async Task BackupLeaderboard(string Token,string Studio,string NameLeaderboard)
+        public async Task BackupLeaderboard(string Token, string Studio, string NameLeaderboard)
         {
-            if (await Leaderboard.Backup(Token,Studio,NameLeaderboard))
+            if (await Leaderboard.Backup(Token, Studio, NameLeaderboard))
             {
                 Response.StatusCode = Ok().StatusCode;
             }
@@ -182,6 +182,7 @@ namespace Backend2.Pages.Apis.UserAPI.AdminAPI
             }
         }
 
+      
 
     }
 }

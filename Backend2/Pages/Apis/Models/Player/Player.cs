@@ -277,7 +277,7 @@ namespace Backend2.Pages.Apis.Models.Player
             }
         }
 
-        public async Task<bool> BanPlayer(string Studio, string Token,string TokenPlayer)
+        public async Task<bool> BanPlayer(string Studio, string Token, string TokenPlayer)
         {
             if (await CheackToken(Token))
             {
@@ -299,7 +299,7 @@ namespace Backend2.Pages.Apis.Models.Player
             }
         }
 
-        public async Task<bool> UnBanPlayer(string Studio, string Token,string TokenPlayer)
+        public async Task<bool> UnBanPlayer(string Studio, string Token, string TokenPlayer)
         {
             if (await CheackToken(Token))
             {
@@ -451,7 +451,6 @@ namespace Backend2.Pages.Apis.Models.Player
             }
         }
 
-
         public async Task<bool> AddEmail(string Token, string Studio, string TokenPlayer, string Email)
         {
             if (await CheackToken(Token) && !await CheackEmailPlayer(Studio, Email))
@@ -481,5 +480,29 @@ namespace Backend2.Pages.Apis.Models.Player
                 return false;
             }
         }
+
+        public async Task<bool> AddPassword(string Token, string Studio, string TokenPlayer, string OldPassword, string NewPassword)
+        {
+            if (await CheackToken(Token))
+            {
+                var Filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) }, { "Account.Password", OldPassword } };
+                var Update = Builders<BsonDocument>.Update.Set("Account.Password", NewPassword);
+
+                var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
+                if (result.ModifiedCount >= 1)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+    
     }
 }
