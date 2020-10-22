@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Backend2.Pages.Apis.Models.Leaderobard;
+using Backend2.Pages.Apis.PageLoggs;
+using Backend2.Pages.Apis.UserAPI.AdminAPI;
+using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
@@ -14,6 +17,8 @@ namespace Backend2.Pages.Apis.Models.Player
 {
     public class Player : BasicAPIs
     {
+
+
         public async Task<string> CreatPlayer(string Token, string Studio, string Username, string Password)
         {
             if (await CheackToken(Token))
@@ -22,20 +27,21 @@ namespace Backend2.Pages.Apis.Models.Player
                 var ModelPlayer = new BsonDocument
                 {
                     {"Account",new BsonDocument
-                {
-                    { "Name",""},
-                    {"Avatar","" },
-                    {"Email" ,""},
-                    {"Phone","" },
-                    { "Token",TokenPlayer},
-                    {"Username",""},
-                    {"Password","" },
-                    {"Language","" },
-                    {"Created",DateTime.Now },
-                    {"LastLogin",DateTime.Now },
-                    {"RecoveryCode",0 },
-                    {"Country","" }
-                }
+                    {
+                        { "Name",""},
+                        {"Avatar","" },
+                        {"Email" ,""},
+                        {"Phone","" },
+                        { "Token",TokenPlayer},
+                        {"Username",""},
+                        {"Password","" },
+                        {"Language","" },
+                        {"IsBan",false },
+                        {"Created",DateTime.Now },
+                        {"LastLogin",DateTime.Now },
+                        {"RecoveryCode",0 },
+                        {"Country","" }
+                    }
                     },
                     {"Logs",new BsonArray() }
                 };
@@ -550,6 +556,52 @@ namespace Backend2.Pages.Apis.Models.Player
             else
             {
                 return false;
+            }
+        }
+
+        public async Task<bool> AddLogPlayer(string Token, string Studio, string TokenPlayer, string Header, string Description)
+        {
+            if (await CheackToken(Token))
+            {
+
+                var DataUpdate = new BsonDocument
+                {
+                    { "Header",Header},
+                    {"Description",Description },
+                    {"Time",DateTime.Now },
+                };
+
+                var Update = new UpdateDefinitionBuilder<BsonDocument>().Push("Logs", DataUpdate);
+                var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } }, Update);
+
+                if (result.ModifiedCount >= 1)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+
+        public async Task<BsonDocument> RecivePlayerLogs(string Token, string Studio, string TokenPlayer, string Count)
+        {
+            if (await CheackToken(Token))
+            {
+                var Filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
+                var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Logs", 1 }, { "_id", 0 } }, Limit = int.Parse(Count) };
+                return await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(Filter, Option).Result.SingleAsync();
+            }
+            else
+            {
+                return new BsonDocument();
             }
         }
 
