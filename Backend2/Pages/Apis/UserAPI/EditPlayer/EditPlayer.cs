@@ -120,24 +120,6 @@ namespace Backend2.Pages.Apis.UserAPI.EditPlayer
             }
         }
 
-        [HttpPost]
-        public async Task<string> RecivePlayerLogs(string Token, string Studio, string TokenPlayer, string Count)
-        {
-            var Result =await Player.RecivePlayerLogs(Token, Studio, TokenPlayer, Count);
-
-            if (Result.ElementCount>=1)
-            {
-                Response.StatusCode = Ok().StatusCode;
-            }
-            else
-            {
-                Response.StatusCode = BadRequest().StatusCode;
-            }
-
-            return Result.ToString();
-        }
-
-
 
         [HttpPost]
         public async Task AddPhone(string Token, string Studio, string TokenPlayer, string PhoneNumber)
@@ -164,6 +146,24 @@ namespace Backend2.Pages.Apis.UserAPI.EditPlayer
                 Response.StatusCode = BadRequest().StatusCode;
             }
         }
+
+        [HttpPost]
+        public async Task<string> RecivePlayerLogs(string Token, string Studio, string TokenPlayer, string Count)
+        {
+            var Result = await Player.RecivePlayerLogs(Token, Studio, TokenPlayer, Count);
+
+            if (Result.ElementCount >= 1)
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+
+            return Result.ToString();
+        }
+
 
         [HttpPost]
         public async Task Ban(string Studio, string Token, string TokenPlayer)

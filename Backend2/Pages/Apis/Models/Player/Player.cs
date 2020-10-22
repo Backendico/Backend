@@ -17,8 +17,6 @@ namespace Backend2.Pages.Apis.Models.Player
 {
     public class Player : BasicAPIs
     {
-
-
         public async Task<string> CreatPlayer(string Token, string Studio, string Username, string Password)
         {
             if (await CheackToken(Token))
