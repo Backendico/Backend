@@ -589,6 +589,30 @@ namespace Backend2.Pages.Apis.Models.Player
         }
 
 
+        public async Task<bool> ClearLogs(string Token, string Studio, string TokenPlayer)
+        {
+            if (await CheackToken(Token))
+            {
+                var Filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
+                var Update = new UpdateDefinitionBuilder<BsonDocument>().Set("Logs", new BsonArray());
+
+                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
+
+                if (Result.ModifiedCount >= 1)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public async Task<BsonDocument> RecivePlayerLogs(string Token, string Studio, string TokenPlayer, string Count)
         {
             if (await CheackToken(Token))
@@ -602,6 +626,8 @@ namespace Backend2.Pages.Apis.Models.Player
                 return new BsonDocument();
             }
         }
+
+
 
     }
 }

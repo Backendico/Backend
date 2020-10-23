@@ -1,6 +1,7 @@
 ﻿using Backend2.Pages.Apis;
 using Backend2.Pages.Apis.Models.Player;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.JSInterop;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
@@ -182,10 +183,58 @@ namespace Backend.Controllers.Players
             return result.ToString();
         }
 
+
         [HttpPost]
         public async Task Save_LeaderboardPlayer(string Token, string TokenPlayer, string Studio, string DetailLeaderboard)
         {
             if (await player.Save_LeaderboardPlayer(Token, TokenPlayer, Studio, DetailLeaderboard))
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+        }
+
+
+        [HttpPost]
+        public async Task<string> RecivePlayerLogs(string Token, string TokenPlayer, string Studio, string Count)
+        {
+            var Result = await player.RecivePlayerLogs(Token, Studio, TokenPlayer, Count);
+
+            if (Result.ElementCount >= 1)
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+
+            return Result.ToString();
+        }
+
+
+        [HttpPost]
+        public async Task AddPlayerLog(string Token, string TokenPlayer, string Studio, string Header, string Description)
+        {
+            if (await player.AddLogPlayer(Token, Studio, TokenPlayer, Header, Description))
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+
+        }
+
+
+        [HttpDelete]
+        public async Task ClearLogs(string Token, string Studio, string TokenPlayer)
+        {
+            if (await player.ClearLogs(Token, Studio, TokenPlayer))
             {
                 Response.StatusCode = Ok().StatusCode;
             }
