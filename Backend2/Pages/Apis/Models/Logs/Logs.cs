@@ -23,8 +23,7 @@ namespace Backend2.Pages.Apis.Models.Logs
 
                 var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
 
-                //add ReadWrite
-                await ReadWriteControll(Studio, API.Read);
+             
 
                 return Result;
             }
@@ -58,9 +57,6 @@ namespace Backend2.Pages.Apis.Models.Logs
                 var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update);
 
 
-                //add ReadWrite
-                await ReadWriteControll(Studio, API.Write);
-
                 if (result.ModifiedCount >= 1)
                 {
                     return true;
@@ -87,9 +83,6 @@ namespace Backend2.Pages.Apis.Models.Logs
 
                 var Update = new UpdateDefinitionBuilder<BsonDocument>().Pull("Logs", DataUpdate);
                 var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update);
-
-                //add ReadWrite
-                await ReadWriteControll(Studio, API.Write);
 
                 if (Result.ModifiedCount >= 1)
                 {

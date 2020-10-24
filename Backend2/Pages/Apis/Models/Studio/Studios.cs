@@ -142,7 +142,7 @@ namespace Backend2.Pages.Apis.Models.Studio
                 var Setting = await Client.GetDatabase(NameStudio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } }, Option).Result.SingleAsync();
 
 
-                await ReadWriteControll(NameStudio, API.Read);
+
 
                 return Setting["Monetiz"].AsBsonDocument.ToString();
             }
@@ -176,8 +176,7 @@ namespace Backend2.Pages.Apis.Models.Studio
                     var Update = new UpdateDefinitionBuilder<BsonDocument>().Push("Monetiz.PaymentList", deserilse);
                     await Client.GetDatabase(NameStudio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update);
 
-                    //add ReadWrite
-                    await ReadWriteControll(NameStudio, API.Read);
+
                     return true;
                 }
                 else
@@ -206,9 +205,6 @@ namespace Backend2.Pages.Apis.Models.Studio
                 var Result = await Client.GetDatabase(NameStudio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(pipe).Result.SingleAsync();
 
 
-                //add ReadWrite
-                await ReadWriteControll(NameStudio, API.Read);
-
                 return Result;
             }
             else
@@ -223,10 +219,6 @@ namespace Backend2.Pages.Apis.Models.Studio
             {
                 var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Setting", 1 } } };
                 var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } }, Option).Result.SingleAsync();
-
-
-                //add ReadWrite
-                await ReadWriteControll(Studio, API.Read);
 
                 return Result;
             }

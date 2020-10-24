@@ -32,9 +32,6 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
                         Result["Leaderboards"]["List"][item.Name].AsBsonDocument.Add("Count", Count);
                     }
 
-
-                    //add read Write
-                    await ReadWriteControll(Studio, API.Read);
                     return Result["Leaderboards"]["List"].ToBsonDocument();
                 }
                 else
@@ -66,8 +63,6 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
 
                 await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindOneAndUpdateAsync(filter, Update);
 
-                //add read Write
-                await ReadWriteControll(Studio, API.Write);
                 return true;
             }
             else
@@ -102,8 +97,8 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
                 var Setting = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(filter, option).Result.SingleAsync();
 
 
-                //add read Write
-                await ReadWriteControll(Studio, API.Read);
+              
+
 
                 if (Setting["Leaderboards"]["List"].AsBsonDocument.TryGetElement(NameLeaderbaord, out _))
                 {
@@ -130,9 +125,6 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
                 var filter = new BsonDocument { { "_id", "Setting" } };
                 var update = new UpdateDefinitionBuilder<BsonDocument>().Set($"Leaderboards.List.{DeserilseData["Name"]}", DeserilseData);
                 var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(filter, update);
-
-                //add read Write
-                await ReadWriteControll(Studio, API.Write);
 
                 if (result.ModifiedCount >= 1)
                 {
@@ -175,8 +167,7 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
                         Rank++;
                     }
 
-                    //add read Write
-                    await ReadWriteControll(Studio, API.Read);
+                   
 
                     return result.ToString();
 
@@ -203,10 +194,6 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
                     var Filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
                     var Update = new UpdateDefinitionBuilder<BsonDocument>().Set($"Leaderboards.List.{NameLeaderboard}", long.Parse(Value));
                     var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
-
-
-                    //add read Write
-                    await ReadWriteControll(Studio, API.Write);
 
                     if (result.ModifiedCount >= 1)
                     {
@@ -238,8 +225,6 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
                 var Update = new UpdateDefinitionBuilder<BsonDocument>().Unset($"Leaderboards.List.{NameLeaderboard}");
                 var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
 
-                //add read Write
-                await ReadWriteControll(Studio, API.Write);
 
                 if (result.ModifiedCount >= 1)
                 {
@@ -272,9 +257,6 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
 
                 var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(filter, Update1);
 
-
-                //add read Write
-                await ReadWriteControll(Studio, API.Write);
 
                 if (result.ModifiedCount >= 1)
                 {
@@ -332,8 +314,6 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
                     var FinalResult = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, update1);
 
 
-                    //add read Write
-                    await ReadWriteControll(Studio, API.Write);
 
                     if (FinalResult.ModifiedCount >= 1)
                     {
@@ -376,8 +356,7 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
                     }
 
 
-                    //add read Write
-                    await ReadWriteControll(Studio, API.Read);
+       
 
                     return Result;
                 }
@@ -400,9 +379,6 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
                 var Filter = new BsonDocument { { "_id", "Setting" } };
                 var Update = new UpdateDefinitionBuilder<BsonDocument>().Unset($"Leaderboards.List.{NameLeaderboard}.Backups.{Version}");
                 var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(Filter, Update);
-
-                //add read Write
-                await ReadWriteControll(Studio, API.Write);
 
 
                 if (result.ModifiedCount >= 1)
@@ -431,9 +407,6 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
                 var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(Filter, option).Result.SingleAsync();
 
 
-                //add read Write
-                await ReadWriteControll(Studio, API.Read);
-
                 if (result["Leaderboards"]["List"][NameLeaderboard]["Backups"][Version]["List"].AsBsonDocument.ElementCount >= 1)
                 {
                     return result["Leaderboards"]["List"][NameLeaderboard]["Backups"][Version]["List"].AsBsonDocument;
@@ -460,8 +433,7 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
                     new BsonDocument{{"$project",new BsonDocument { {"_id",0 },{ "Leaderboards.Backups", 0 } } }}
                 };
 
-                //add read Write
-                await ReadWriteControll(Studio, API.Read);
+              
 
                 return await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
             }
@@ -476,10 +448,6 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
             if (await CheackToken(Token))
             {
                 var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Leaderboards", 1 } ,{"_id",0 } } };
-
-
-                //add read Write
-                await ReadWriteControll(Studio, API.Read);
 
                 return await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } }, Option).Result.SingleAsync();
             }

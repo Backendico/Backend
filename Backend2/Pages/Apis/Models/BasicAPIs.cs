@@ -89,21 +89,44 @@ namespace Backend2.Pages.Apis.Models
 
         }
 
-        public async Task ReadWriteControll(string Studio, API API)
+
+        /// <summary>
+        /// cheack read write for limited use
+        /// </summary>
+        /// <param name="Studio"></param>
+        /// <param name="API"></param>
+        /// <returns></returns>
+        public async Task<bool> ReadWriteControll(string Studio, API API)
         {
-            UpdateDefinition<BsonDocument> Update = null;
-            switch (API)
+            var Filter = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Monetiz", 1 }, { "APIs", 1 } } };
+
+            var Find = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } }, Filter).Result.SingleAsync();
+
+            var TotalAPI = Find["Monetiz"]["Apis"].ToInt64();
+            var UserAPI = Find["APIs"]["Read"].ToInt64() + Find["APIs"]["Write"].ToInt64();
+
+            if (UserAPI + 1 <= TotalAPI)
             {
-                case API.Read:
-                    Update = Builders<BsonDocument>.Update.Inc<int>("APIs.Read", 1);
-                    break;
-                case API.Write:
-                    Update = Builders<BsonDocument>.Update.Inc<int>("APIs.Write", 1);
-                    break;
+                UpdateDefinition<BsonDocument> Update = null;
+                switch (API)
+                {
+                    case API.Read:
+                        Update = Builders<BsonDocument>.Update.Inc<int>("APIs.Read", 1);
+                        break;
+                    case API.Write:
+                        Update = Builders<BsonDocument>.Update.Inc<int>("APIs.Write", 1);
+                        break;
+                }
+
+                await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update);
+                return true;
+            }
+            else
+            {
+                return false;
             }
 
-            var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update);
-            Debug.WriteLine(Result.ModifiedCount);
+
         }
 
 
