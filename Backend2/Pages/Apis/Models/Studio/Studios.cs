@@ -35,7 +35,6 @@ namespace Backend2.Pages.Apis.Models.Studio
                     { "PaymentList",new BsonArray()},
                     { "Leaderboards", 3 },
                      { "Apis", 90000 },
-                      { "Studios", 2 },
                        { "Logs", 200 },
                         {"Cash",0 },
                     { "Players", 5000 } } } };
@@ -158,7 +157,6 @@ namespace Backend2.Pages.Apis.Models.Studio
                     var Update1 = new UpdateDefinitionBuilder<BsonDocument>().
                         Set("Monetiz.Leaderboards", deserilse["Leaderboards"]).
                         Set("Monetiz.Apis", deserilse["Apis"]).
-                         Set("Monetiz.Studios", deserilse["Studios"]).
                          Set("Monetiz.Logs", deserilse["Logs"]).
                          Set("Monetiz.Players", deserilse["Players"]).
                          Set("Monetiz.Cash", deserilse["Cash"]);
