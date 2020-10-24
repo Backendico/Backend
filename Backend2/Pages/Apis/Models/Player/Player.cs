@@ -617,9 +617,17 @@ namespace Backend2.Pages.Apis.Models.Player
         {
             if (await CheackToken(Token))
             {
-                var Filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
-                var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Logs", 1 }, { "_id", 0 } }, Limit = int.Parse(Count) };
-                return await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(Filter, Option).Result.SingleAsync();
+                var Pipe = new[]
+                {
+                    new BsonDocument{ {"$match",new BsonDocument { {"Account.Token",ObjectId.Parse(TokenPlayer) } } } },
+                    new BsonDocument{ { "$project" ,new BsonDocument { { "Logs", 1 } } } },
+                    new BsonDocument{ {"$unwind","$Logs" } } ,
+                    new BsonDocument{ {"$sort",new BsonDocument { {"Logs.Time" ,-1} } } },
+                    new BsonDocument{{"$group",new BsonDocument { {"_id","$_id" },{"Logs",new BsonDocument { {"$push","$Logs" } } } } }}
+                };
+
+                return await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
+
             }
             else
             {
