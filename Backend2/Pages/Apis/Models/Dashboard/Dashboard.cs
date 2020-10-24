@@ -199,6 +199,8 @@ namespace Backend2.Pages.Apis.Models.Dashboard
 
                     }
 
+                    //add read Write
+                    await ReadWriteControll(Studio, API.Read);
 
                     return Result;
                 }

@@ -82,6 +82,10 @@ namespace Backend2.Pages.Apis.Models.Studio
                     finalResult["Settings"].AsBsonArray.Add(Setting);
                 }
 
+
+                //Control Write read
+
+
                 return finalResult.ToString();
             }
             else
@@ -137,6 +141,9 @@ namespace Backend2.Pages.Apis.Models.Studio
                 Option.Projection = new BsonDocument { { "Monetiz", 1 } };
                 var Setting = await Client.GetDatabase(NameStudio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } }, Option).Result.SingleAsync();
 
+
+                await ReadWriteControll(NameStudio, API.Read);
+
                 return Setting["Monetiz"].AsBsonDocument.ToString();
             }
             else
@@ -169,6 +176,8 @@ namespace Backend2.Pages.Apis.Models.Studio
                     var Update = new UpdateDefinitionBuilder<BsonDocument>().Push("Monetiz.PaymentList", deserilse);
                     await Client.GetDatabase(NameStudio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update);
 
+                    //add ReadWrite
+                    await ReadWriteControll(NameStudio, API.Read);
                     return true;
                 }
                 else
@@ -196,6 +205,10 @@ namespace Backend2.Pages.Apis.Models.Studio
 
                 var Result = await Client.GetDatabase(NameStudio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(pipe).Result.SingleAsync();
 
+
+                //add ReadWrite
+                await ReadWriteControll(NameStudio, API.Read);
+
                 return Result;
             }
             else
@@ -208,8 +221,13 @@ namespace Backend2.Pages.Apis.Models.Studio
         {
             if (await CheackToken(Token))
             {
-                var Option = new FindOptions<BsonDocument>() {Projection=new BsonDocument { {"Setting",1 } } };
-                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } },Option).Result.SingleAsync();
+                var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Setting", 1 } } };
+                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } }, Option).Result.SingleAsync();
+
+
+                //add ReadWrite
+                await ReadWriteControll(Studio, API.Read);
+
                 return Result;
             }
             else

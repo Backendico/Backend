@@ -54,6 +54,10 @@ namespace Backend2.Pages.Apis.Models.Player
 
                 await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").InsertOneAsync(ModelPlayer);
 
+
+                //add ReadWrite
+                await ReadWriteControll(Studio, API.Write);
+
                 return TokenPlayer.ToString();
             }
             else
@@ -89,6 +93,10 @@ namespace Backend2.Pages.Apis.Models.Player
                 //Step:2
                 Result["Players"] = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").CountDocumentsAsync("{}");
 
+
+                //add ReadWrite
+                await ReadWriteControll(Studio, API.Read);
+
                 return Result.ToString();
             }
             else
@@ -105,6 +113,8 @@ namespace Backend2.Pages.Apis.Models.Player
                 var filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
                 var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").DeleteOneAsync(filter);
 
+                //add ReadWrite
+                await ReadWriteControll(Studio, API.Write);
 
                 if (result.DeletedCount >= 1)
                 {
@@ -134,6 +144,10 @@ namespace Backend2.Pages.Apis.Models.Player
 
 
                 var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(filter, update);
+
+                //add ReadWrite
+                await ReadWriteControll(Studio, API.Write);
+
                 if (result.ModifiedCount >= 1)
                 {
                     return true;
@@ -159,6 +173,10 @@ namespace Backend2.Pages.Apis.Models.Player
                     var Update = new UpdateDefinitionBuilder<BsonDocument>().Set("Account.RecoveryCode", new Random().Next());
 
                     var Result = await Client.GetDatabase(studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
+
+
+                    //add ReadWrite
+                    await ReadWriteControll(studio, API.Write);
 
                     if (Result.ModifiedCount >= 1)
                     {
@@ -193,6 +211,9 @@ namespace Backend2.Pages.Apis.Models.Player
 
                     var Users = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(filter, OptionFind).Result.SingleAsync();
 
+                    //add ReadWrite
+                    await ReadWriteControll(Studio, API.Read);
+
                     return Users;
                 }
                 else
@@ -217,6 +238,9 @@ namespace Backend2.Pages.Apis.Models.Player
                     OptionFind.Projection = new BsonDocument { { "Account.Password", 0 } };
 
                     var Users = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(filter, OptionFind).Result.SingleAsync();
+
+                    //add ReadWrite
+                    await ReadWriteControll(Studio, API.Read);
 
                     return Users;
                 }
@@ -243,6 +267,10 @@ namespace Backend2.Pages.Apis.Models.Player
 
                     var Detailuser = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(filter, OptionFind).Result.SingleAsync();
 
+
+                    //add ReadWrite
+                    await ReadWriteControll(Studio, API.Read);
+
                     return Detailuser;
                 }
                 else
@@ -267,6 +295,10 @@ namespace Backend2.Pages.Apis.Models.Player
 
                 var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
 
+
+                //add ReadWrite
+                await ReadWriteControll(Studio, API.Write);
+
                 if (Result.MatchedCount >= 1)
                 {
                     return true;
@@ -290,6 +322,11 @@ namespace Backend2.Pages.Apis.Models.Player
                 var filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
                 var Update = new BsonDocument { { "Account.IsBan", true } };
                 var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(filter, Update);
+
+
+                //add ReadWrite
+                await ReadWriteControll(Studio, API.Write);
+
                 if (result.ModifiedCount >= 1)
                 {
                     return true;
@@ -312,6 +349,10 @@ namespace Backend2.Pages.Apis.Models.Player
                 var filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
                 var Update = new BsonDocument { { "Account.IsBan", false } };
                 var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(filter, Update);
+
+                //add ReadWrite
+                await ReadWriteControll(Studio, API.Write);
+
                 if (result.ModifiedCount >= 1)
                 {
                     return true;
@@ -333,6 +374,9 @@ namespace Backend2.Pages.Apis.Models.Player
             {
                 var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Account", 1 } } };
                 var Player = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } }, Option).Result.SingleAsync();
+              
+                //add ReadWrite
+                await ReadWriteControll(Studio, API.Read);
 
                 return Player;
             }
@@ -352,6 +396,10 @@ namespace Backend2.Pages.Apis.Models.Player
 
                     var Update = new UpdateDefinitionBuilder<BsonDocument>().Set<string>("Account.Avatar", Link);
                     var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } }, Update);
+
+
+                    //add ReadWrite
+                    await ReadWriteControll(Studio, API.Write);
 
                     if (Result.ModifiedCount >= 1)
                     {
@@ -383,6 +431,10 @@ namespace Backend2.Pages.Apis.Models.Player
                     var Update = new UpdateDefinitionBuilder<BsonDocument>().Set<string>("Account.Language", Language);
                     var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } }, Update);
 
+
+                    //add ReadWrite
+                    await ReadWriteControll(Studio, API.Write);
+
                     if (Result.ModifiedCount >= 1)
                     {
                         return true;
@@ -413,6 +465,9 @@ namespace Backend2.Pages.Apis.Models.Player
                     var Update = new UpdateDefinitionBuilder<BsonDocument>().Set<string>("Account.Country", Country);
                     var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } }, Update);
 
+                    //add ReadWrite
+                    await ReadWriteControll(Studio, API.Write);
+
                     if (Result.ModifiedCount >= 1)
                     {
                         return true;
@@ -441,6 +496,10 @@ namespace Backend2.Pages.Apis.Models.Player
                 var Update = new UpdateDefinitionBuilder<BsonDocument>().Set<string>("Account.Username", Username);
                 var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } }, Update);
 
+
+                //add ReadWrite
+                await ReadWriteControll(Studio, API.Write);
+
                 if (Result.ModifiedCount >= 1)
                 {
                     return true;
@@ -466,6 +525,9 @@ namespace Backend2.Pages.Apis.Models.Player
                     _ = new MailAddress(Email);
                     var Update = new UpdateDefinitionBuilder<BsonDocument>().Set<string>("Account.Email", Email);
                     var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } }, Update);
+
+                    //add ReadWrite
+                    await ReadWriteControll(Studio, API.Write);
 
                     if (Result.ModifiedCount >= 1)
                     {
@@ -495,6 +557,10 @@ namespace Backend2.Pages.Apis.Models.Player
                 var Update = Builders<BsonDocument>.Update.Set("Account.Password", NewPassword);
 
                 var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
+
+                //add ReadWrite
+                await ReadWriteControll(Studio, API.Write);
+
                 if (result.ModifiedCount >= 1)
                 {
                     return true;
@@ -517,6 +583,10 @@ namespace Backend2.Pages.Apis.Models.Player
                 var Filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
                 var Update = Builders<BsonDocument>.Update.Set("Account.Name", Nickname);
                 var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
+
+                //add ReadWrite
+                await ReadWriteControll(Studio, API.Write);
+
                 if (Result.ModifiedCount >= 1)
                 {
                     return true;
@@ -540,6 +610,10 @@ namespace Backend2.Pages.Apis.Models.Player
                 var Filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
                 var Update = Builders<BsonDocument>.Update.Set("Account.Phone", PhoneNumber);
                 var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
+
+                //add ReadWrite
+                await ReadWriteControll(Studio, API.Write);
+
 
                 if (Result.ModifiedCount >= 1)
                 {
@@ -572,6 +646,10 @@ namespace Backend2.Pages.Apis.Models.Player
                 var Update = new UpdateDefinitionBuilder<BsonDocument>().Push("Logs", DataUpdate);
                 var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } }, Update);
 
+
+                //add ReadWrite
+                await ReadWriteControll(Studio, API.Write);
+
                 if (result.ModifiedCount >= 1)
                 {
                     return true;
@@ -597,6 +675,10 @@ namespace Backend2.Pages.Apis.Models.Player
                 var Update = new UpdateDefinitionBuilder<BsonDocument>().Set("Logs", new BsonArray());
 
                 var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
+
+
+                //add ReadWrite
+                await ReadWriteControll(Studio, API.Write);
 
                 if (Result.ModifiedCount >= 1)
                 {
@@ -625,6 +707,9 @@ namespace Backend2.Pages.Apis.Models.Player
                     new BsonDocument{ {"$sort",new BsonDocument { {"Logs.Time" ,-1} } } },
                     new BsonDocument{{"$group",new BsonDocument { {"_id","$_id" },{"Logs",new BsonDocument { {"$push","$Logs" } } } } }}
                 };
+
+                //add ReadWrite
+                await ReadWriteControll(Studio, API.Write);
 
                 return await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
 

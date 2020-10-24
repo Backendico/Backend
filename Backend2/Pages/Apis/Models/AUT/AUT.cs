@@ -46,7 +46,6 @@ namespace Backend2.Pages.Apis.Models.AUT
             try
             {
                 Token = Result["AccountSetting"]["Token"].AsString;
-
                 return Token;
             }
             catch (Exception)

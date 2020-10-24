@@ -2,6 +2,7 @@
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Mail;
 using System.Threading.Tasks;
@@ -88,6 +89,24 @@ namespace Backend2.Pages.Apis.Models
 
         }
 
+        public async Task ReadWriteControll(string Studio, API API)
+        {
+            UpdateDefinition<BsonDocument> Update = null;
+            switch (API)
+            {
+                case API.Read:
+                    Update = Builders<BsonDocument>.Update.Inc<int>("APIs.Read", 1);
+                    break;
+                case API.Write:
+                    Update = Builders<BsonDocument>.Update.Inc<int>("APIs.Write", 1);
+                    break;
+            }
+
+            var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update);
+            Debug.WriteLine(Result.ModifiedCount);
+        }
+
+
         /// <summary>
         /// Send Signal notifaction
         /// </summary>
@@ -96,6 +115,8 @@ namespace Backend2.Pages.Apis.Models
         {
             SignalR.SignalNotifaction.SendSignal(Token.ToString());
         }
+
+
 
 
 
@@ -178,5 +199,11 @@ namespace Backend2.Pages.Apis.Models
                 public string Token = ObjectId.GenerateNewId().ToString();
             }
         }
+    }
+
+    public enum API
+    {
+        Read, Write
+
     }
 }
