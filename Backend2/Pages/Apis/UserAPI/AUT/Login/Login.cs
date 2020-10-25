@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Backend2.Pages.Apis.Models;
 using Backend2.Pages.Apis.Models.Player;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 
 namespace Backend2.Pages.Apis.UserAPI.AUT.Login
 {
@@ -18,16 +20,24 @@ namespace Backend2.Pages.Apis.UserAPI.AUT.Login
         /// </summary>
         public async Task<string> Token(string Token, string Studio, string TokenPlayer)
         {
-            var Result = await Player.LoginPlayer(Token, Studio, TokenPlayer);
-            if (Result.ElementCount >= 1)
+            if (await BasicAPIs.ReadWriteControll(Studio, API.Write))
             {
-                Response.StatusCode = Ok().StatusCode;
+                var Result = await Player.LoginPlayer(Token, Studio, TokenPlayer);
+                if (Result.ElementCount >= 1)
+                {
+                    Response.StatusCode = Ok().StatusCode;
+                }
+                else
+                {
+                    Response.StatusCode = BadRequest().StatusCode;
+                }
+                return Result.ToString();
             }
             else
             {
                 Response.StatusCode = BadRequest().StatusCode;
+                return new BsonDocument().ToString();
             }
-            return Result.ToString();
         }
 
     }

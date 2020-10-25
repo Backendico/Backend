@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Backend2.Pages.Apis.Models;
 using Backend2.Pages.Apis.Models.Leaderobard;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 
 namespace Backend2.Pages.Apis.UserAPI.Leaderboard
 {
@@ -17,39 +19,56 @@ namespace Backend2.Pages.Apis.UserAPI.Leaderboard
         [HttpPost]
         public async Task<string> ReciveLeaderboardSetting(string Token, string Studio, string NameLeaderboard)
         {
-            var result = await LeaderboardModel.SettingLeaderboard(Token, Studio, NameLeaderboard);
-            if (result.ElementCount >= 1)
+            if (await BasicAPIs.ReadWriteControll(Studio, API.Read))
             {
-                Response.StatusCode = Ok().StatusCode;
+                var result = await LeaderboardModel.SettingLeaderboard(Token, Studio, NameLeaderboard);
+                if (result.ElementCount >= 1)
+                {
+                    Response.StatusCode = Ok().StatusCode;
+                }
+                else
+                {
+                    Response.StatusCode = BadRequest().StatusCode;
+                }
+                return result.ToString();
             }
             else
             {
                 Response.StatusCode = BadRequest().StatusCode;
+                return new BsonDocument().ToString();
             }
-            return result.ToString();
         }
 
 
         [HttpPost]
         public async Task<string> ReciveLeaderboard(string Token, string Studio, string NameLeaderboard, string Count)
         {
-            var result = await LeaderboardModel.LeaderboardDetail(Token, Studio, NameLeaderboard, Count);
-            if (result.Length >= 1)
+            if (await BasicAPIs.ReadWriteControll(Studio, API.Read))
             {
-                Response.StatusCode = Ok().StatusCode;
+
+                var result = await LeaderboardModel.LeaderboardDetail(Token, Studio, NameLeaderboard, Count);
+                if (result.Length >= 1)
+                {
+                    Response.StatusCode = Ok().StatusCode;
+                }
+                else
+                {
+                    Response.StatusCode = BadRequest().StatusCode;
+                }
+
+                return result;
             }
             else
             {
                 Response.StatusCode = BadRequest().StatusCode;
+                return new BsonDocument().ToString();
             }
-
-            return result;
         }
 
         [HttpPost]
         public async Task AddPlayer(string Token, string Studio, string TokenPlayer, string NameLeaderboard, string Value)
         {
-            if (await LeaderboardModel.Add(Token, Studio, TokenPlayer, NameLeaderboard, Value))
+            if (await LeaderboardModel.Add(Token, Studio, TokenPlayer, NameLeaderboard, Value) && await BasicAPIs.ReadWriteControll(Studio, API.Write))
             {
                 Response.StatusCode = Ok().StatusCode;
             }
@@ -61,7 +80,7 @@ namespace Backend2.Pages.Apis.UserAPI.Leaderboard
 
         public async Task RemovePlayer(string Token, string Studio, string TokenPlayer, string NameLeaderboard)
         {
-            if (await LeaderboardModel.Remove(Token, Studio, TokenPlayer, NameLeaderboard))
+            if (await LeaderboardModel.Remove(Token, Studio, TokenPlayer, NameLeaderboard) && await BasicAPIs.ReadWriteControll(Studio, API.Write))
             {
                 Response.StatusCode = Ok().StatusCode;
             }
@@ -75,17 +94,25 @@ namespace Backend2.Pages.Apis.UserAPI.Leaderboard
         [HttpPost]
         public async Task<string> RecivePlayerLeaderboards(string Token, string Studio, string TokenPlayer)
         {
-            var Result = await LeaderboardModel.RecivePlayerLeaderboard(Token, Studio, TokenPlayer);
-            if (Result.IsBsonNull)
+            if (await BasicAPIs.ReadWriteControll(Studio, API.Read))
             {
-                Response.StatusCode = BadRequest().StatusCode;
+                var Result = await LeaderboardModel.RecivePlayerLeaderboard(Token, Studio, TokenPlayer);
+                if (Result.IsBsonNull)
+                {
+                    Response.StatusCode = BadRequest().StatusCode;
+                }
+                else
+                {
+                    Response.StatusCode = Ok().StatusCode;
+                }
+
+                return Result.ToString();
             }
             else
             {
-                Response.StatusCode = Ok().StatusCode;
+                Response.StatusCode = BadRequest().StatusCode;
+                return new BsonDocument().ToString();
             }
-
-            return Result.ToString();
         }
 
     }

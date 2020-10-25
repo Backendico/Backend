@@ -96,8 +96,10 @@ namespace Backend2.Pages.Apis.Models
         /// <param name="Studio"></param>
         /// <param name="API"></param>
         /// <returns></returns>
-        public async Task<bool> ReadWriteControll(string Studio, API API)
+        public static async Task<bool> ReadWriteControll(string Studio, API API)
         {
+            MongoClient Client = new MongoClient();
+
             var Filter = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Monetiz", 1 }, { "APIs", 1 } } };
 
             var Find = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } }, Filter).Result.SingleAsync();
@@ -125,8 +127,6 @@ namespace Backend2.Pages.Apis.Models
             {
                 return false;
             }
-
-
         }
 
 

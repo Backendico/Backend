@@ -29,7 +29,7 @@ namespace Backend2.Pages.Apis.Models.Player
                         { "Name",""},
                         {"Avatar","" },
                         {"Email" ,""},
-                        {"Phone","" },
+                        {"Phone",new BsonInt64(0)},
                         { "Token",TokenPlayer},
                         {"Username",""},
                         {"Password","" },
