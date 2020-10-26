@@ -1,4 +1,5 @@
 ﻿using Backend2.Pages.Apis.Models.Dashboard;
+using Backend2.Pages.Apis.Models.Player;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Serializers;
@@ -107,6 +108,10 @@ namespace Backend2.Pages.Apis.PageDashboard
         }
 
 
+        //public async  Task<string> CheackUpdate()
+        //{
+        //    //Dashboard.Client.GetDatabase("")
+        //}
 
     }
 }
