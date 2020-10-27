@@ -108,10 +108,21 @@ namespace Backend2.Pages.Apis.PageDashboard
         }
 
 
-        //public async  Task<string> CheackUpdate()
-        //{
-        //    //Dashboard.Client.GetDatabase("")
-        //}
+        [HttpPost]
+        public async Task<string> CheackUpdate()
+        {
+            var Result = await Dashboard.CheackUpdate();
+            if (Result.ElementCount >= 1)
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+
+            return Result.ToString();
+        }
 
     }
 }

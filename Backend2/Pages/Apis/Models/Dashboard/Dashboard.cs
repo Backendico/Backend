@@ -295,5 +295,21 @@ namespace Backend2.Pages.Apis.Models.Dashboard
             return true;
         }
 
+
+        public async Task<BsonDocument> CheackUpdate()
+        {
+            try
+            {
+
+                var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Part", 0 } ,{"_id",0 } } };
+
+            return  await Client.GetDatabase("Users").GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "Part", "Setting" } },Option).Result.SingleAsync();
+            }
+            catch (Exception)
+            {
+                return new BsonDocument();
+            }
+            
+        }
     }
 }
