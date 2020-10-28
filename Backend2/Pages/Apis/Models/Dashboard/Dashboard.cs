@@ -134,8 +134,8 @@ namespace Backend2.Pages.Apis.Models.Dashboard
                     {
                         var Option1 = new FindOptions<BsonDocument>();
                         Option1.Projection = new BsonDocument { { "Leaderboards", 1 } };
-                        var Count_Leaderboards = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } }).Result.ToListAsync();
-                        Result["Leaderboards"]["Count"] = Count_Leaderboards.Count;
+                        var Count_Leaderboards = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } }).Result.SingleAsync();
+                        Result["Leaderboards"]["Count"] = Count_Leaderboards["Leaderboards"]["List"].AsBsonDocument.ElementCount;
                     }
                     catch (Exception)
                     {
