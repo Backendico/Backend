@@ -53,9 +53,9 @@ namespace Backend.Controllers.Players
         /// list and count players
         /// </returns>
         [HttpPost]
-        public async Task<string> ReciveDetailPagePlayer(string Token, string Studio)
+        public async Task<string> ReciveDetailPagePlayer(string Token, string Studio,string Count)
         {
-            var result = await player.ReciveDetailPagePlayer(Token, Studio);
+            var result = await player.ReciveDetailPagePlayer(Token, Studio,int.Parse(Count));
 
             if (result.Length >= 1)
             {
