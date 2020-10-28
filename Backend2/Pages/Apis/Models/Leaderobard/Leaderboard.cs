@@ -1,11 +1,13 @@
 ﻿using Backend2.Pages.Apis.UserAPI;
 using Microsoft.AspNetCore.Mvc.Diagnostics;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Backend2.Pages.Apis.Models.Leaderobard
@@ -97,7 +99,7 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
                 var Setting = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(filter, option).Result.SingleAsync();
 
 
-              
+
 
 
                 if (Setting["Leaderboards"]["List"].AsBsonDocument.TryGetElement(NameLeaderbaord, out _))
@@ -167,7 +169,7 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
                         Rank++;
                     }
 
-                   
+
 
                     return result.ToString();
 
@@ -185,34 +187,138 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
 
         public async Task<bool> Add(string Token, string Studio, string TokenPlayer, string NameLeaderboard, string Value)
         {
-            try
+
+            if (await CheackToken(Token) && await CheackMinMax())
             {
-                int.Parse(Value);
-
-                if (await CheackToken(Token))
+                try
                 {
-                    var Filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
-                    var Update = new UpdateDefinitionBuilder<BsonDocument>().Set($"Leaderboards.List.{NameLeaderboard}", long.Parse(Value));
-                    var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
+                    var Score = long.Parse(Value);
 
-                    if (result.ModifiedCount >= 1)
+                    var Options1 = new FindOptions<BsonDocument>()
                     {
-                        return true;
+                        Projection = new BsonDocument {
+                        { $"Leaderboards.List.{NameLeaderboard}.Min", 1 } ,
+                        { $"Leaderboards.List.{NameLeaderboard}.Max", 1 },
+                        { $"Leaderboards.List.{NameLeaderboard}.Sort", 1 }
                     }
-                    else
+                    };
+                    var SettingLeaderboard = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } }, Options1).Result.SingleAsync();
+
+                    switch (SettingLeaderboard["Leaderboards"]["List"][$"{NameLeaderboard}"]["Sort"].ToInt32())
                     {
-                        return false;
+                        case 0: //last value
+                            SendValue(long.Parse(Value));
+                            break;
+                        case 1: //min value
+                            {
+                                var Filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
+                                var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Leaderboards.List", 1 } } };
+                                var Player = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(Filter, Option).Result.SingleAsync();
+                                try
+                                {
+                                    if (Score <= Player["Leaderboards"]["List"][$"{NameLeaderboard}"])
+                                        SendValue(Score);
+                                }
+                                catch (Exception)
+                                {
+                                    SendValue(Score);
+                                }
+
+                            }
+                            break;
+                        case 2: //max value
+                            {
+                                var Filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
+                                var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Leaderboards.List", 1 } } };
+                                var Player = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(Filter, Option).Result.SingleAsync();
+                                try
+                                {
+                                    if (Score >= Player["Leaderboards"]["List"][$"{NameLeaderboard}"])
+                                        SendValue(Score);
+                                }
+                                catch (Exception)
+                                {
+                                    SendValue(Score);
+                                }
+                            }
+                            break;
+                        case 3: //sum value
+                            {
+                                var Filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
+                                var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Leaderboards.List", 1 } } };
+                                var Player = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(Filter, Option).Result.SingleAsync();
+
+                                try
+                                {
+                                    SendValue(Score + Player["Leaderboards"]["List"][$"{NameLeaderboard}"].ToInt64());
+                                }
+                                catch (Exception)
+                                {
+                                    SendValue(Score);
+                                }
+                            }
+                            break;
+                        default:
+                            Debug.WriteLine("not set");
+                            break;
                     }
+
+                    return true;
+
+
                 }
-                else
+                catch (Exception)
                 {
+
                     return false;
                 }
             }
-            catch (Exception)
+            else
             {
-
                 return false;
+            }
+
+
+            //send to player
+            async void SendValue(long value)
+            {
+                var Filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
+                var Update = new UpdateDefinitionBuilder<BsonDocument>().Set($"Leaderboards.List.{NameLeaderboard}", value);
+                await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
+            }
+
+            async Task<bool> CheackMinMax()
+            {
+                try
+                {
+                    long.Parse(Value);
+
+                    var Options1 = new FindOptions<BsonDocument>()
+                    {
+                        Projection = new BsonDocument {
+                        { $"Leaderboards.List.{NameLeaderboard}.Min", 1 } ,
+                        { $"Leaderboards.List.{NameLeaderboard}.Max", 1 },
+                        { $"Leaderboards.List.{NameLeaderboard}.Sort", 1 }
+                    }
+                    };
+                    var SettingLeaderboard = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } }, Options1).Result.SingleAsync();
+
+
+                    if (long.Parse(Value) > SettingLeaderboard["Leaderboards"]["List"][$"{NameLeaderboard}"]["Max"] || long.Parse(Value) < SettingLeaderboard["Leaderboards"]["List"][$"{NameLeaderboard}"]["Min"])
+                    {
+                        return false;
+                    }
+                    else
+                    {
+
+                        return true;
+                    }
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+
             }
         }
 
@@ -356,7 +462,7 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
                     }
 
 
-       
+
 
                     return Result;
                 }
@@ -433,7 +539,7 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
                     new BsonDocument{{"$project",new BsonDocument { {"_id",0 },{ "Leaderboards.Backups", 0 } } }}
                 };
 
-              
+
 
                 return await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
             }
@@ -447,7 +553,7 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
         {
             if (await CheackToken(Token))
             {
-                var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Leaderboards", 1 } ,{"_id",0 } } };
+                var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Leaderboards", 1 }, { "_id", 0 } } };
 
                 return await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } }, Option).Result.SingleAsync();
             }
@@ -456,6 +562,8 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
                 return new BsonDocument();
             }
         }
+
+
 
 
     }

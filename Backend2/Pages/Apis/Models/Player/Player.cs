@@ -41,7 +41,8 @@ namespace Backend2.Pages.Apis.Models.Player
                         {"Country","" }
                     }
                     },
-                    {"Logs",new BsonArray() }
+                    {"Logs",new BsonArray() },
+                    {"Leaderboards",new BsonDocument{ {"List",new BsonDocument { } } } }
                 };
 
                 //cheack username 
