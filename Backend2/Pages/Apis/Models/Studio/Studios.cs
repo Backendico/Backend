@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -30,7 +31,9 @@ namespace Backend2.Pages.Apis.Models.Studio
                         {"Database",NameDataBase }}
                     }
 
-               ,{ "Leaderboards",new BsonDocument{ {"List",new BsonDocument { } } } },
+               ,{"Achievements",new BsonArray() },
+                    
+                    { "Leaderboards",new BsonDocument{ {"List",new BsonDocument { } } } },
                     { "Monetiz", new BsonDocument {
                     { "PaymentList",new BsonArray()},
                     { "Leaderboards", 3 },
