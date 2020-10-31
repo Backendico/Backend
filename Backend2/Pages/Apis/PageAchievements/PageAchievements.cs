@@ -62,9 +62,9 @@ namespace Backend2.Pages.Apis.PageAchievements
         }
 
         [HttpPost]
-        public async Task EditAchievements(string Token,string Studio,string TokenAchievements,string Detail)
+        public async Task EditAchievements(string Token, string Studio, string TokenAchievements, string Detail)
         {
-            if (await Achievements.EditAchievements(Token,Studio,ObjectId.Parse(TokenAchievements),BsonDocument.Parse(Detail)))
+            if (await Achievements.EditAchievements(Token, Studio, ObjectId.Parse(TokenAchievements), BsonDocument.Parse(Detail)))
             {
                 Response.StatusCode = Ok().StatusCode;
             }
@@ -75,5 +75,17 @@ namespace Backend2.Pages.Apis.PageAchievements
 
         }
 
+        [HttpPut]
+        public async Task AddPlayerAchievements(string Token, string Studio, string TokenPlayer, string Detail)
+        {
+            if (await Achievements.AddPlayerAchievements(Token, Studio, ObjectId.Parse(TokenPlayer), BsonDocument.Parse(Detail)))
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+        }
     }
 }

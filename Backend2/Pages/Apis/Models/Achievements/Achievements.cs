@@ -115,5 +115,32 @@ namespace Backend2.Pages.Apis.Models.Achievements
                 return false;
             }
         }
+
+
+        public async Task<bool> AddPlayerAchievements(string Token, string Studio, ObjectId TokenPlayer, BsonDocument Detail)
+        {
+
+            var Pipe = new[]
+            {
+                new BsonDocument{{"$project",new BsonDocument { {"Account.Token",1 },{ "Achievements",1 } } }},
+                new BsonDocument{{"$match",new BsonDocument { { "Account.Token", TokenPlayer } } } },
+                new BsonDocument{ {"$unwind", "$Achievements" } },
+                new BsonDocument{{"$match",new BsonDocument { {"Achievements.Token", Detail["Token"].AsObjectId} } }}
+            };
+
+            var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
+
+            if (Result.ElementCount >= 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+
+        }
+
     }
 }
