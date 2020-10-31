@@ -92,7 +92,7 @@ namespace Backend2.Pages.Apis.Models.Achievements
         {
             if (await CheackToken(Token))
             {
-                var Update = Builders<BsonDocument>.Update.Set<BsonDocument>("Achievements.$[f].Token", Detail);
+                var Update = Builders<BsonDocument>.Update.Set("Achievements.$[f].Value", Detail["Value"].ToInt64());
                 var filterarra = new[]{
                 new  BsonDocumentArrayFilterDefinition<BsonDocument>(new BsonDocument
                 {
