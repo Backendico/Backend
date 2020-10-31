@@ -81,6 +81,7 @@ namespace Backend2.Pages.Apis.PageAchievements
             if (await Achievements.AddPlayerAchievements(Token, Studio, ObjectId.Parse(TokenPlayer), BsonDocument.Parse(Detail)))
             {
                 Response.StatusCode = Ok().StatusCode;
+
             }
             else
             {

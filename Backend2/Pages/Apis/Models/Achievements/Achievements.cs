@@ -119,25 +119,48 @@ namespace Backend2.Pages.Apis.Models.Achievements
 
         public async Task<bool> AddPlayerAchievements(string Token, string Studio, ObjectId TokenPlayer, BsonDocument Detail)
         {
-
-            var Pipe = new[]
+            try
             {
+                try
+                {
+                    var Pipe = new[]
+                    {
                 new BsonDocument{{"$project",new BsonDocument { {"Account.Token",1 },{ "Achievements",1 } } }},
                 new BsonDocument{{"$match",new BsonDocument { { "Account.Token", TokenPlayer } } } },
                 new BsonDocument{ {"$unwind", "$Achievements" } },
                 new BsonDocument{{"$match",new BsonDocument { {"Achievements.Token", Detail["Token"].AsObjectId} } }}
             };
+                    var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
 
-            var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
+                    _ = Result.ElementCount >= 1;
 
-            if (Result.ElementCount >= 1)
-            {
-                return true;
+                    return false;
+                }
+                catch (Exception)
+                {
+                    var Filter = new BsonDocument { { "Account.Token", TokenPlayer } };
+                    var Update = new UpdateDefinitionBuilder<BsonDocument>().Push<BsonDocument>("Achievements", Detail);
+                    var resultPush = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
+
+                    if (resultPush.ModifiedCount >= 1)
+                    {
+                        //return true;
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                        //return false;
+                    }
+                }
+
+
             }
-            else
+            catch (Exception)
             {
                 return false;
             }
+
 
 
         }
