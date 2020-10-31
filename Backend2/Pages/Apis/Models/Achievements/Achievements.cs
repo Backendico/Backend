@@ -43,10 +43,10 @@ namespace Backend2.Pages.Apis.Models.Achievements
         {
             if (await CheackToken(Token))
             {
-                var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Achievements", 1 } ,{"_id",0 } } };
+                var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Achievements", 1 }, { "_id", 0 } } };
 
                 var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } }, Option).Result.SingleAsync();
-               
+
                 return Result;
             }
             else
@@ -85,6 +85,35 @@ namespace Backend2.Pages.Apis.Models.Achievements
                 return false;
             }
 
+        }
+
+
+        public async Task<bool> EditAchievements(string Token, string Studio, ObjectId TokenAchievements, BsonDocument Detail)
+        {
+            if (await CheackToken(Token))
+            {
+                var Update = Builders<BsonDocument>.Update.Set<BsonDocument>("Achievements.$[f].Token", Detail);
+                var filterarra = new[]{
+                new  BsonDocumentArrayFilterDefinition<BsonDocument>(new BsonDocument
+                {
+                    {"f.Token",new BsonDocument{ {"$in" ,new BsonArray(new[] {TokenAchievements })} } }
+                }) };
+
+                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update, options: new UpdateOptions() { ArrayFilters = filterarra });
+
+                if (Result.ModifiedCount >= 1)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }

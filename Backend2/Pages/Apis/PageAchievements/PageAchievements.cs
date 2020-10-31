@@ -6,6 +6,7 @@ using Backend2.Pages.Apis.Models.Achievements;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
+using MongoDB.Driver.Core.Clusters.ServerSelectors;
 
 namespace Backend2.Pages.Apis.PageAchievements
 {
@@ -58,6 +59,20 @@ namespace Backend2.Pages.Apis.PageAchievements
             {
                 Response.StatusCode = BadRequest().StatusCode;
             }
+        }
+
+        [HttpPost]
+        public async Task EditAchievements(string Token,string Studio,string TokenAchievements,string Detail)
+        {
+            if (await Achievements.EditAchievements(Token,Studio,ObjectId.Parse(TokenAchievements),BsonDocument.Parse(Detail)))
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+
         }
 
     }
