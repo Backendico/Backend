@@ -6,6 +6,7 @@ using Backend2.Pages.Apis.Models.Achievements;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver.Core.Clusters.ServerSelectors;
 
 namespace Backend2.Pages.Apis.PageAchievements
@@ -92,18 +93,27 @@ namespace Backend2.Pages.Apis.PageAchievements
         [HttpPost]
         public async Task<string> ReciveAchievementsPlayerList(string Token, string Studio, string TokenAchievement, string Count)
         {
-            var Result = await Achievements.RecivePlayersAchivementsList(Token, Studio, ObjectId.Parse(TokenAchievement), int.Parse(Count));
-
-            if (Result.ElementCount >= 1)
+            try
             {
-                Response.StatusCode = Ok().StatusCode;
+                var Result = await Achievements.RecivePlayersAchivementsList(Token, Studio, ObjectId.Parse(TokenAchievement), int.Parse(Count));
+
+                if (Result.ElementCount >= 1)
+                {
+                    Response.StatusCode = Ok().StatusCode;
+                }
+                else
+                {
+                    Response.StatusCode = BadRequest().StatusCode;
+                }
+
+                return Result.ToString();
+
             }
-            else
+            catch (Exception)
             {
-                Response.StatusCode = BadRequest().StatusCode;
+                return new BsonDocument().ToString();
             }
 
-            return Result.ToString();
         }
     }
 }

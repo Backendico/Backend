@@ -175,10 +175,12 @@ namespace Backend2.Pages.Apis.Models.Achievements
 
         public async Task<BsonDocument> RecivePlayersAchivementsList(string Token, string Studio, ObjectId TokenAchievement, int Count)
         {
-            if (await CheackToken(Token))
+            try
             {
-                var Pipe = new[]
+                if (await CheackToken(Token))
                 {
+                    var Pipe = new[]
+                    {
                     new BsonDocument{ {"$project",new BsonDocument { {"Token","$Account.Token" },{"Username","$Account.Username" },{ "Achievements",1} } } },
                     new BsonDocument{{"$unwind","$Achievements" } },
                     new BsonDocument{{"$match",new BsonDocument { {"Achievements.Token" ,TokenAchievement} } } },
@@ -187,9 +189,16 @@ namespace Backend2.Pages.Apis.Models.Achievements
                     new BsonDocument{{"$group",new BsonDocument { {"_id","List Achivements" },{"List",new BsonDocument { {"$push",new BsonDocument { {"Username","$Username" } ,{"Token","$Token" } } } } } } }}
                 };
 
-                return await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
+                    var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
+
+                    return Result;
+                }
+                else
+                {
+                    return new BsonDocument();
+                }
             }
-            else
+            catch (Exception)
             {
                 return new BsonDocument();
             }
