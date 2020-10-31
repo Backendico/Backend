@@ -81,12 +81,29 @@ namespace Backend2.Pages.Apis.PageAchievements
             if (await Achievements.AddPlayerAchievements(Token, Studio, ObjectId.Parse(TokenPlayer), BsonDocument.Parse(Detail)))
             {
                 Response.StatusCode = Ok().StatusCode;
-
             }
             else
             {
                 Response.StatusCode = BadRequest().StatusCode;
             }
+        }
+
+
+        [HttpPost]
+        public async Task<string> ReciveAchievementsPlayerList(string Token, string Studio, string TokenAchievement, string Count)
+        {
+            var Result = await Achievements.RecivePlayersAchivementsList(Token, Studio, ObjectId.Parse(TokenAchievement), int.Parse(Count));
+
+            if (Result.ElementCount >= 1)
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+
+            return Result.ToString();
         }
     }
 }

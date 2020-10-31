@@ -119,51 +119,80 @@ namespace Backend2.Pages.Apis.Models.Achievements
 
         public async Task<bool> AddPlayerAchievements(string Token, string Studio, ObjectId TokenPlayer, BsonDocument Detail)
         {
-            try
+            if (await CheackToken(Token))
             {
+
                 try
                 {
-                    var Pipe = new[]
+                    try
                     {
+                        var Pipe = new[]
+                        {
                 new BsonDocument{{"$project",new BsonDocument { {"Account.Token",1 },{ "Achievements",1 } } }},
                 new BsonDocument{{"$match",new BsonDocument { { "Account.Token", TokenPlayer } } } },
                 new BsonDocument{ {"$unwind", "$Achievements" } },
                 new BsonDocument{{"$match",new BsonDocument { {"Achievements.Token", Detail["Token"].AsObjectId} } }}
             };
-                    var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
+                        var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
 
-                    _ = Result.ElementCount >= 1;
+                        _ = Result.ElementCount >= 1;
 
-                    return false;
+                        return false;
+                    }
+                    catch (Exception)
+                    {
+                        var Filter = new BsonDocument { { "Account.Token", TokenPlayer } };
+                        var Update = new UpdateDefinitionBuilder<BsonDocument>().Push<BsonDocument>("Achievements", Detail);
+                        var resultPush = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
+
+                        if (resultPush.ModifiedCount >= 1)
+                        {
+                            //return true;
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                            //return false;
+                        }
+                    }
+
+
                 }
                 catch (Exception)
                 {
-                    var Filter = new BsonDocument { { "Account.Token", TokenPlayer } };
-                    var Update = new UpdateDefinitionBuilder<BsonDocument>().Push<BsonDocument>("Achievements", Detail);
-                    var resultPush = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
-
-                    if (resultPush.ModifiedCount >= 1)
-                    {
-                        //return true;
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                        //return false;
-                    }
+                    return false;
                 }
 
-
             }
-            catch (Exception)
+            else
             {
                 return false;
             }
 
 
-
         }
 
+        public async Task<BsonDocument> RecivePlayersAchivementsList(string Token, string Studio, ObjectId TokenAchievement, int Count)
+        {
+            if (await CheackToken(Token))
+            {
+                var Pipe = new[]
+                {
+                    new BsonDocument{ {"$project",new BsonDocument { {"Token","$Account.Token" },{"Username","$Account.Username" },{ "Achievements",1} } } },
+                    new BsonDocument{{"$unwind","$Achievements" } },
+                    new BsonDocument{{"$match",new BsonDocument { {"Achievements.Token" ,TokenAchievement} } } },
+                    new BsonDocument{{"$project",new BsonDocument { {"_id",0 },{ "Achievements", 0 } }} },
+                    new BsonDocument{{"$limit",Count}},
+                    new BsonDocument{{"$group",new BsonDocument { {"_id","List Achivements" },{"List",new BsonDocument { {"$push",new BsonDocument { {"Username","$Username" } ,{"Token","$Token" } } } } } } }}
+                };
+
+                return await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
+            }
+            else
+            {
+                return new BsonDocument();
+            }
+        }
     }
 }
