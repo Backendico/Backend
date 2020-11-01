@@ -118,19 +118,11 @@ namespace Backend2.Pages.Apis.PageAchievements
 
 
         [HttpDelete]
-        public async Task RemoveAchievementPlayer(string Token, string Studio, string TokenPlayer, string TokenAchievements, string NameAchievements)
-        {
-            var Serilsedetail = new BsonDocument
-            {
-                {"Token",ObjectId.Parse(TokenAchievements) },
-                {"Name",NameAchievements }
-            };
-
-
-            if (await Achievements.Remove(Token, Studio, ObjectId.Parse(TokenPlayer), Serilsedetail))
+        public async Task RemoveAchievementPlayer(string Token, string Studio, string TokenPlayer, string Detail)
+       {
+            if (await Achievements.Remove(Token, Studio, ObjectId.Parse(TokenPlayer), BsonDocument.Parse(Detail)))
             {
                 Response.StatusCode = Ok().StatusCode;
-
             }
             else
             {

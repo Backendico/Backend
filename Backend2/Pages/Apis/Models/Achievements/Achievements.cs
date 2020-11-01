@@ -1,11 +1,6 @@
 ﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Backend2.Pages.Apis.Models.Achievements
@@ -142,6 +137,7 @@ namespace Backend2.Pages.Apis.Models.Achievements
                     }
                     catch (Exception)
                     {
+                        Detail.Add("Recive", DateTime.Now);
                         var Filter = new BsonDocument { { "Account.Token", TokenPlayer } };
                         var Update = new UpdateDefinitionBuilder<BsonDocument>().Push<BsonDocument>("Achievements", Detail);
                         var resultPush = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
@@ -185,9 +181,9 @@ namespace Backend2.Pages.Apis.Models.Achievements
                     new BsonDocument{ {"$project",new BsonDocument { {"Token","$Account.Token" },{"Username","$Account.Username" },{ "Achievements",1} } } },
                     new BsonDocument{{"$unwind","$Achievements" } },
                     new BsonDocument{{"$match",new BsonDocument { {"Achievements.Token" ,TokenAchievement} } } },
-                    new BsonDocument{{"$project",new BsonDocument { {"_id",0 },{ "Achievements", 0 } }} },
+                    new BsonDocument{{"$project",new BsonDocument { {"_id",0 },{ "Achievements", 1 },{"Username",1 },{"Token" ,1} }} },
                     new BsonDocument{{"$limit",Count}},
-                    new BsonDocument{{"$group",new BsonDocument { {"_id","List Achivements" },{"List",new BsonDocument { {"$push",new BsonDocument { {"Username","$Username" } ,{"Token","$Token" } } } } } } }}
+                    new BsonDocument{{"$group",new BsonDocument { {"_id","List Achivements" },{"List",new BsonDocument { {"$push",new BsonDocument { {"Recive", "$Achievements.Recive" }, {"Username","$Username" } ,{"Token","$Token" } } } } } } }}
                 };
 
                     var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
@@ -209,6 +205,7 @@ namespace Backend2.Pages.Apis.Models.Achievements
         {
             try
             {
+
                 if (await CheackToken(Token))
                 {
                     var Filter = new BsonDocument { { "Account.Token", TokenPlayer } };
@@ -288,7 +285,7 @@ namespace Backend2.Pages.Apis.Models.Achievements
                 return false;
             }
 
-           
+
         }
 
     }
