@@ -119,7 +119,7 @@ namespace Backend2.Pages.Apis.PageAchievements
 
         [HttpDelete]
         public async Task RemoveAchievementPlayer(string Token, string Studio, string TokenPlayer, string Detail)
-       {
+        {
             if (await Achievements.Remove(Token, Studio, ObjectId.Parse(TokenPlayer), BsonDocument.Parse(Detail)))
             {
                 Response.StatusCode = Ok().StatusCode;
@@ -142,5 +142,23 @@ namespace Backend2.Pages.Apis.PageAchievements
                 Response.StatusCode = BadRequest().StatusCode;
             }
         }
+
+
+        [HttpPost]
+        public async Task<string> PlayerAchievements(string Token, string Studio, string TokenPlayer)
+        {
+            var Result = await Achievements.PlayerAchievements(Token, Studio, ObjectId.Parse(TokenPlayer));
+
+            if (Result.ElementCount >= 1)
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+            return Result.ToString();
+        }
+
     }
 }

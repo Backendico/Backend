@@ -287,5 +287,33 @@ namespace Backend2.Pages.Apis.Models.Achievements
 
         }
 
+
+        public async Task<BsonDocument> PlayerAchievements(string Token, string Studio, ObjectId TokenPlayer)
+        {
+            if (await CheackToken(Token))
+            {
+                try
+                {
+                    var Filter = new BsonDocument { { "Account.Token", TokenPlayer } };
+                    var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "_id", 0 }, { "Achievements", 1 } } };
+
+                    var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(Filter, Option).Result.SingleAsync();
+
+                    return Result;
+                }
+                catch (Exception)
+                {
+
+                    return new BsonDocument();
+                }
+
+            }
+            else
+            {
+                return new BsonDocument();
+            }
+        }
+
+
     }
 }
