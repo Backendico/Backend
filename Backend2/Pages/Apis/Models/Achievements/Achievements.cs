@@ -261,12 +261,26 @@ namespace Backend2.Pages.Apis.Models.Achievements
                     }
                     else
                     {
+
                         return false;
                     }
                 }
                 else
                 {
-                    return false;
+                    var Update1 = new UpdateDefinitionBuilder<BsonDocument>().Pull("Achievements", Detail);
+
+                    var Result1 = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateManyAsync(new BsonDocument { { "_id", "Setting" } }, Update1);
+
+                    if (Result1.ModifiedCount >= 1)
+                    {
+                        return true;
+
+                    }
+                    else
+                    {
+
+                        return false;
+                    }
                 }
             }
             else
@@ -274,6 +288,7 @@ namespace Backend2.Pages.Apis.Models.Achievements
                 return false;
             }
 
+           
         }
 
     }
