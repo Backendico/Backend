@@ -205,7 +205,6 @@ namespace Backend2.Pages.Apis.Models.Achievements
         {
             try
             {
-
                 if (await CheackToken(Token))
                 {
                     var Filter = new BsonDocument { { "Account.Token", TokenPlayer } };
