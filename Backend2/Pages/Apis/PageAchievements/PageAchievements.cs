@@ -126,6 +126,7 @@ namespace Backend2.Pages.Apis.PageAchievements
                 {"Name",NameAchievements }
             };
 
+
             if (await Achievements.Remove(Token, Studio, ObjectId.Parse(TokenPlayer), Serilsedetail))
             {
                 Response.StatusCode = Ok().StatusCode;
@@ -137,5 +138,17 @@ namespace Backend2.Pages.Apis.PageAchievements
             }
         }
 
+        [HttpDelete]
+        public async Task RemoveAchievements(string Token, string Studio, string Detail)
+        {
+            if (await Achievements.RemoveAchievements(Token, Studio, BsonDocument.Parse(Detail)))
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+        }
     }
 }

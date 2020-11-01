@@ -4,6 +4,7 @@ using MongoDB.Driver;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -204,19 +205,64 @@ namespace Backend2.Pages.Apis.Models.Achievements
             }
         }
 
-
         public async Task<bool> Remove(string Token, string Studio, ObjectId TokenPlayer, BsonDocument Detail)
+        {
+            try
+            {
+                if (await CheackToken(Token))
+                {
+                    var Filter = new BsonDocument { { "Account.Token", TokenPlayer } };
+                    var Update = new UpdateDefinitionBuilder<BsonDocument>().Pull<BsonDocument>("Achievements", Detail);
+                    var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
+
+                    if (Result.ModifiedCount >= 1)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> RemoveAchievements(string Token, string Studio, BsonDocument Detail)
         {
             if (await CheackToken(Token))
             {
+                var SerilseDetail = new BsonDocument
+                {
+                    {"Token",Detail["Token"] },
+                    {"Name",Detail["Name"] }
+                };
+                var Update = new UpdateDefinitionBuilder<BsonDocument>().Pull("Achievements", SerilseDetail);
 
-                var Filter = new BsonDocument { { "Account.Token", TokenPlayer } };
-                var Update = new UpdateDefinitionBuilder<BsonDocument>().Pull<BsonDocument>("Achievements", Detail);
-                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
+                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateManyAsync("{}", Update);
 
                 if (Result.ModifiedCount >= 1)
                 {
-                    return true;
+                    var Update1 = new UpdateDefinitionBuilder<BsonDocument>().Pull("Achievements", Detail);
+
+                    var Result1 = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateManyAsync(new BsonDocument { { "_id", "Setting" } }, Update1);
+
+                    if (Result1.ModifiedCount >= 1)
+                    {
+                        return true;
+
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
                 else
                 {
@@ -226,8 +272,9 @@ namespace Backend2.Pages.Apis.Models.Achievements
             else
             {
                 return false;
-
             }
+
         }
+
     }
 }
