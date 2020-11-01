@@ -203,5 +203,31 @@ namespace Backend2.Pages.Apis.Models.Achievements
                 return new BsonDocument();
             }
         }
+
+
+        public async Task<bool> Remove(string Token, string Studio, ObjectId TokenPlayer, BsonDocument Detail)
+        {
+            if (await CheackToken(Token))
+            {
+
+                var Filter = new BsonDocument { { "Account.Token", TokenPlayer } };
+                var Update = new UpdateDefinitionBuilder<BsonDocument>().Pull<BsonDocument>("Achievements", Detail);
+                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
+
+                if (Result.ModifiedCount >= 1)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+
+            }
+        }
     }
 }
