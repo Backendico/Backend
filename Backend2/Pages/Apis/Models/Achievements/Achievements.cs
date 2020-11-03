@@ -1,6 +1,8 @@
 ﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Backend2.Pages.Apis.Models.Achievements
@@ -39,9 +41,34 @@ namespace Backend2.Pages.Apis.Models.Achievements
         {
             if (await CheackToken(Token))
             {
+                //recive  achievements  Setting
                 var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Achievements", 1 }, { "_id", 0 } } };
 
                 var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } }, Option).Result.SingleAsync();
+
+                // recive count Player
+
+                try
+                {
+
+                for (int i = 0; i < Result["Achievements"].AsBsonArray; i++)
+                {
+
+                    var Pipe1 = new[]
+                    {
+                            new BsonDocument{ { "$project" ,new BsonDocument { {"_id",0 },{"Achievements",1 } } } },
+                            new BsonDocument{{"$unwind","$Achievements" }},new BsonDocument{{"$match",new BsonDocument { {"Achievements.Token",Result["Achievements"][i]["Token"].AsObjectId } } }},
+                        new BsonDocument{{"$count","Achievements"}}
+                    };
+                    var CountPlayer = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe1).Result.SingleAsync();
+                        Result["Achievements"].AsBsonArray[i].AsBsonDocument.Add(new BsonElement("Players", CountPlayer));
+                }
+                }
+                catch (Exception)
+                {
+
+                  
+                }
 
                 return Result;
             }
