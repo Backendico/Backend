@@ -50,25 +50,53 @@ namespace Backend2.Pages.Apis.Models.Achievements
 
                 try
                 {
-
-                for (int i = 0; i < Result["Achievements"].AsBsonArray; i++)
-                {
-
-                    var Pipe1 = new[]
+                    for (int i = 0; i < Result["Achievements"].AsBsonArray; i++)
                     {
+                        var Pipe1 = new[]
+                        {
                             new BsonDocument{ { "$project" ,new BsonDocument { {"_id",0 },{"Achievements",1 } } } },
                             new BsonDocument{{"$unwind","$Achievements" }},new BsonDocument{{"$match",new BsonDocument { {"Achievements.Token",Result["Achievements"][i]["Token"].AsObjectId } } }},
                         new BsonDocument{{"$count","Achievements"}}
                     };
-                    var CountPlayer = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe1).Result.SingleAsync();
-                        Result["Achievements"].AsBsonArray[i].AsBsonDocument.Add(new BsonElement("Players", CountPlayer));
-                }
+                        try
+                        {
+                            var CountPlayer = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe1).Result.ToListAsync();
+
+                            if (CountPlayer.Count >= 1)
+                            {
+                                Result["Achievements"].AsBsonArray[i].AsBsonDocument.Add(new BsonElement("Players", CountPlayer[0]));
+
+                            }
+                            else
+                            {
+                                Result["Achievements"].AsBsonArray[i].AsBsonDocument.Add(new BsonElement("Players", 0));
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            Result["Achievements"].AsBsonArray[i].AsBsonDocument.Add(new BsonElement("Players", 0));
+                        }
+                    }
+
                 }
                 catch (Exception)
                 {
 
-                  
+
                 }
+
+                //total player
+                try
+                {
+                    var TotalPlayer = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").CountDocumentsAsync("{}");
+
+                    Result.Add(new BsonElement("TotalPlayer", TotalPlayer));
+                }
+                catch (Exception)
+                {
+                    Result.Add(new BsonElement("TotalPlayer", 0));
+                }
+
 
                 return Result;
             }
@@ -144,7 +172,6 @@ namespace Backend2.Pages.Apis.Models.Achievements
         {
             if (await CheackToken(Token))
             {
-
                 try
                 {
                     try
