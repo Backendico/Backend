@@ -130,6 +130,7 @@ namespace Backend2.Pages.Apis.PageAchievements
             }
         }
 
+
         [HttpDelete]
         public async Task RemoveAchievements(string Token, string Studio, string Detail)
         {
