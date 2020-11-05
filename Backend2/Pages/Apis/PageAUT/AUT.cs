@@ -106,6 +106,7 @@ namespace Backend.Controllers
         }
 
 
+
         [HttpPost]
         public async Task Recovery1(string Email)
         {
@@ -119,7 +120,31 @@ namespace Backend.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task Recovery2(string Email, string Code)
+        {
+            if (await BaseAUT.RecoveryStep2(Email, int.Parse(Code)))
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+        }
 
+        [HttpPost]
+        public async Task Recovery3(string Email,string Code,string NewPassword)
+        {
+            if (await BaseAUT.ChangePassword(Email,int.Parse(Code),NewPassword))
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+        }
 
         #endregion
     }
