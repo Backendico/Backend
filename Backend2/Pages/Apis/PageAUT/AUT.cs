@@ -82,7 +82,6 @@ namespace Backend.Controllers
         }
 
 
-
         /// <summary>
         /// cheack Username
         /// </summary>
@@ -105,6 +104,22 @@ namespace Backend.Controllers
                 return false;
             }
         }
+
+
+        [HttpPost]
+        public async Task Recovery1(string Email)
+        {
+            if (await BaseAUT.RecoveryStep1(Email))
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+        }
+
+
 
         #endregion
     }

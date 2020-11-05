@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
 using System.Threading.Tasks;
 
 namespace Backend2.Pages.Apis.Models.AUT
@@ -54,5 +55,56 @@ namespace Backend2.Pages.Apis.Models.AUT
             }
         }
 
+        public async Task<bool> RecoveryStep1(string Email)
+        {
+            var Result = await Client.GetDatabase("Users").GetCollection<BsonDocument>("Users").FindAsync(new BsonDocument { { "AccountSetting.Email", Email } }).Result.ToListAsync();
+
+            //cheack email 
+            if (Result.Count >= 1)
+            {
+                //work  send
+                var RecoveryCode = new Random().Next();
+
+                var Update = new UpdateDefinitionBuilder<BsonDocument>().Set("AccountSetting.RecoveryCode", RecoveryCode);
+
+                var result = await Client.GetDatabase("Users").GetCollection<BsonDocument>("Users").UpdateOneAsync(new BsonDocument { { "AccountSetting.Email", Email } }, Update);
+
+                if (result.ModifiedCount >= 1)
+                {
+                    var bodyMessage =
+                        $"Hello dear : {Result[0]["AccountSetting"]["Username"]}" +
+                        "\n" +
+                        "\n" +
+                        "This email was sent to your request to recover your account." +
+                        "\n" +
+                        "Ignore this email if you have not submitted an account recovery request.  " +
+                        "\n\n" +
+                        "Or use this code to recover the account." +
+                        "\n\n" +
+                        $"Code : {RecoveryCode}" +
+                        "\n\n\n" +
+                        "Thanks for choosing us" +
+                        "\n" +
+                        "Backendi.ir";
+
+
+                    MailMessage Message = new MailMessage("recovery@backendi.ir",Email,"Recovery Account",bodyMessage);
+                    
+                    
+                    SendMail(new MailAddress(Email),Message, (s,e)=> { }, () => { });
+
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+
+        }
     }
 }

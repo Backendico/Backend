@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
 
@@ -14,6 +15,7 @@ namespace Backend2.Pages.Apis.Models
         internal MongoClient Client = new MongoClient();
         internal string UsersDB => "Users";
         internal string UsersCollection => "Users";
+
 
         /// <summary>
         /// cheack tokens Users
@@ -127,6 +129,29 @@ namespace Backend2.Pages.Apis.Models
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// send email with smtp
+        /// </summary>
+        /// <param name="Email"></param>
+        /// <param name="Message"></param>
+        /// <returns></returns>
+        public static void SendMail(MailAddress Email, MailMessage Message, SendCompletedEventHandler Result, Action ERR)
+        {
+            SmtpClient Mailsender = new SmtpClient("mail.backendi.ir", 587);
+            Mailsender.Credentials = new NetworkCredential("recovery@backendi.ir", "85245685hHH!");
+
+            try
+            {
+                Mailsender.Send(Message);
+                Mailsender.SendCompleted += Result;
+            }
+            catch (Exception)
+            {
+                ERR();
+            }
+
         }
 
 
