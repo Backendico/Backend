@@ -146,7 +146,6 @@ namespace Backend2.Pages.Apis.PagePayments
         }
 
 
-
         enum PaymentCallback
         {
             Payment_not_made = 1,

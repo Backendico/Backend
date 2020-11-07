@@ -62,5 +62,29 @@ namespace Backend2.Pages.Apis.PageLoggs
         }
 
 
+        [HttpPost]
+        public async Task MarkReadNotifaction(string Token, string Studio)
+        {
+            if (await Logs.CheackToken(Token))
+            {
+
+                if (await Logs.MarkReadNotifactions(Token, Studio))
+                {
+                    Response.StatusCode = Ok().StatusCode;
+                }
+                else
+                {
+                    Response.StatusCode = BadRequest().StatusCode;
+                }
+            }
+            else
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+
+
+        }
+
+
     }
 }

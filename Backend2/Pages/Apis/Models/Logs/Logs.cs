@@ -23,7 +23,7 @@ namespace Backend2.Pages.Apis.Models.Logs
 
                 var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
 
-             
+
 
                 return Result;
             }
@@ -98,6 +98,23 @@ namespace Backend2.Pages.Apis.Models.Logs
                 return false;
             }
 
+        }
+
+        public async Task<bool> MarkReadNotifactions(string Token, string Studio)
+        {
+            var Update = Builders<BsonDocument>.Update.Set("Logs.$[].IsNotifaction", false);
+
+
+            var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update);
+      
+            if (Result.ModifiedCount >= 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
     }
