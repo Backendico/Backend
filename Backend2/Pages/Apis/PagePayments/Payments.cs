@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Backend2.Pages.Apis.Models.Logs;
+using Backend2.Pages.Apis.Models.Studio;
+using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using RestSharp;
@@ -10,6 +12,9 @@ namespace Backend2.Pages.Apis.PagePayments
     [Controller]
     public class Payments : APIBase
     {
+
+        Logs log = new Logs();
+        Studios Studios = new Studios();
 
         [HttpPost]
         public async Task<string> Callback(int status, int track_id, string id, string order_id, int amount, string card_no, string hashed_card_no, string timestamp)
@@ -31,7 +36,7 @@ namespace Backend2.Pages.Apis.PagePayments
                 var request = new RestRequest(Method.POST);
                 request.AddHeader("Content-Type", "application/json");
                 request.AddHeader("X-API-KEY", "a14190c5-c321-4a93-bdcc-e9f753608e00");
-                request.AddHeader("X-SANDBOX", "1");
+                //request.AddHeader("X-SANDBOX", "1");
                 request.AddHeader("Cookie", "SSESS39ff69be91203b0b4d2039dd7a713620=7epaMgKagAqyX9SlMEc4j3MKve3PrWsPwYQQ5J0re20");
                 request.AddParameter("application/json", DeserilseDetail.ToString(), ParameterType.RequestBody);
                 var response = await client.ExecuteAsync(request);
@@ -48,6 +53,16 @@ namespace Backend2.Pages.Apis.PagePayments
 
                     await Client.GetDatabase("Users").GetCollection<BsonDocument>("Payments").UpdateOneAsync(new BsonDocument { { "DetailPay.id", DeserilseDetail["id"] } }, Update1);
 
+
+                    //add payment
+                    var Update2 = new UpdateDefinitionBuilder<BsonDocument>().Push<BsonDocument>("Monetiz.PaymentList", Paymentlog);
+
+
+                    await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { {"_id" ,"Setting"} }, Update2);
+
+
+                    //add log
+                    await log.AddLog(Token, Studio, "Payments", $"The amount \" { Paymentlog["Request"]["amount"] } \" was credited to your account", Paymentlog.ToString(), "true");
 
                     Response.StatusCode = Ok().StatusCode;
                 }
@@ -72,6 +87,7 @@ namespace Backend2.Pages.Apis.PagePayments
                 try
                 {
                     var deserilseDetail = BsonDocument.Parse(Detail);
+                    deserilseDetail["Detail"].AsBsonDocument.Add(new BsonElement("Created", DateTime.Now));
                     deserilseDetail.Add(new BsonElement("LastStatus", 1));
                     await Client.GetDatabase("Users").GetCollection<BsonDocument>("Payments").InsertOneAsync(deserilseDetail);
 
