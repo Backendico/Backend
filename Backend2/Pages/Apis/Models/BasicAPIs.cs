@@ -137,7 +137,7 @@ namespace Backend2.Pages.Apis.Models
         /// <param name="Email"></param>
         /// <param name="Message"></param>
         /// <returns></returns>
-        public static void SendMail(MailAddress Email, MailMessage Message, SendCompletedEventHandler Result, Action ERR)
+        public static void SendMail( MailMessage Message, SendCompletedEventHandler Result, Action ERR)
         {
             SmtpClient Mailsender = new SmtpClient("mail.backendi.ir", 587);
             Mailsender.Credentials = new NetworkCredential("recovery@backendi.ir", "85245685hHH!");
@@ -153,7 +153,7 @@ namespace Backend2.Pages.Apis.Models
             }
 
         }
-        public static void SendMail_Pay(MailAddress Email, MailMessage Message)
+        public static void SendMail_Pay(MailMessage Message)
         {
             SmtpClient Mailsender = new SmtpClient("mail.backendi.ir", 587);
             Mailsender.Credentials = new NetworkCredential("pay@backendi.ir", "85245685hHH!");

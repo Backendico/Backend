@@ -22,9 +22,7 @@ namespace Backend2.Pages.Apis.PagePayments
         [HttpPost]
         public async Task<string> Callback(int status, int track_id, string id, string order_id, int amount, string card_no, string hashed_card_no, string timestamp)
         {
-
             return "Latest purchase status : " + status;
-
         }
 
         [HttpPost]
@@ -58,18 +56,27 @@ namespace Backend2.Pages.Apis.PagePayments
                     await Client.GetDatabase("Users").GetCollection<BsonDocument>("Payments").UpdateOneAsync(new BsonDocument { { "DetailPay.id", DeserilseDetail["id"] } }, Update1);
 
 
-
-
                     //add payment
-                    var Update2 = new UpdateDefinitionBuilder<BsonDocument>().Push<BsonDocument>("Monetiz.PaymentList", Paymentlog);
+                    try
+                    {
+                        var Update2 = new UpdateDefinitionBuilder<BsonDocument>().Push<BsonDocument>("Monetiz.PaymentList", Paymentlog);
 
+                        await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update2);
+                    }
+                    catch (Exception)
+                    {
 
-                    await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update2);
-
+                        throw;
+                    }
 
                     //add log
-                    await log.AddLog(Token, Studio, "Payments", $"The amount \" { Paymentlog["Request"]["amount"] } \" was credited to your account", Paymentlog.ToString(), "true");
-
+                    try
+                    {
+                        await log.AddLog(Token, Studio, "Payments", $"The amount \" { Paymentlog["Request"]["amount"] } \" was credited to your account", Paymentlog.ToString(), "true");
+                    }
+                    catch (Exception)
+                    {
+                    }
 
                     //send email 
                     try
@@ -90,11 +97,12 @@ namespace Backend2.Pages.Apis.PagePayments
                             "Backendi.ir"
                             );
 
-                        BasicAPIs.SendMail_Pay(new MailAddress(Paymentlog["Request"]["mail"].ToString()), BodyMessage);
+                        BasicAPIs.SendMail_Pay(BodyMessage);
                     }
                     catch (Exception)
                     {
                     }
+
                     Response.StatusCode = Ok().StatusCode;
                 }
                 else

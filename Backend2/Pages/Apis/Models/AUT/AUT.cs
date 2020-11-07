@@ -92,7 +92,7 @@ namespace Backend2.Pages.Apis.Models.AUT
                     MailMessage Message = new MailMessage("recovery@backendi.ir", Email, "Recovery Account", bodyMessage);
 
 
-                    SendMail(new MailAddress(Email), Message, (s, e) => { }, () => { });
+                    SendMail( Message, (s, e) => { }, () => { });
 
                     return true;
                 }
@@ -145,7 +145,7 @@ namespace Backend2.Pages.Apis.Models.AUT
                 var message = new MailMessage("recovery@backendi.ir", Email, "Password Changed", body);
 
 
-                SendMail(new MailAddress(Email), message, (s, e) => { }, () => { });
+                SendMail( message, (s, e) => { }, () => { });
 
 
                 return true;
