@@ -1,10 +1,14 @@
-﻿using Backend2.Pages.Apis.Models.Logs;
+﻿using Backend2.Pages.AdminApis.ApisBasicAdmin;
+using Backend2.Pages.Apis.Models;
+using Backend2.Pages.Apis.Models.Logs;
 using Backend2.Pages.Apis.Models.Studio;
+using Backend2.Pages.Apis.UserAPI;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using RestSharp;
 using System;
+using System.Net.Mail;
 using System.Threading.Tasks;
 
 namespace Backend2.Pages.Apis.PagePayments
@@ -14,11 +18,11 @@ namespace Backend2.Pages.Apis.PagePayments
     {
 
         Logs log = new Logs();
-        Studios Studios = new Studios();
 
         [HttpPost]
         public async Task<string> Callback(int status, int track_id, string id, string order_id, int amount, string card_no, string hashed_card_no, string timestamp)
         {
+
             return "Latest purchase status : " + status;
 
         }
@@ -54,16 +58,43 @@ namespace Backend2.Pages.Apis.PagePayments
                     await Client.GetDatabase("Users").GetCollection<BsonDocument>("Payments").UpdateOneAsync(new BsonDocument { { "DetailPay.id", DeserilseDetail["id"] } }, Update1);
 
 
+
+
                     //add payment
                     var Update2 = new UpdateDefinitionBuilder<BsonDocument>().Push<BsonDocument>("Monetiz.PaymentList", Paymentlog);
 
 
-                    await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { {"_id" ,"Setting"} }, Update2);
+                    await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update2);
 
 
                     //add log
                     await log.AddLog(Token, Studio, "Payments", $"The amount \" { Paymentlog["Request"]["amount"] } \" was credited to your account", Paymentlog.ToString(), "true");
 
+
+                    //send email 
+                    try
+                    {
+
+                        var BodyMessage = new MailMessage(
+                            "pay@backendi.ir",
+                            Paymentlog["Request"]["mail"].ToString(),
+                            "Payment was successful",
+                            body: "Hi" +
+                            "\n" +
+                            $"Your payment for \" {Paymentlog["Detail"]["Studio"]} \" Studio was successful." +
+                            "\n\n" +
+                            $"Payment tracking number:{Paymentlog["Request"]["order_id"]}" +
+                            $"\n\n" +
+                            "Tanks" +
+                            "\n" +
+                            "Backendi.ir"
+                            );
+
+                        BasicAPIs.SendMail_Pay(new MailAddress(Paymentlog["Request"]["mail"].ToString()), BodyMessage);
+                    }
+                    catch (Exception)
+                    {
+                    }
                     Response.StatusCode = Ok().StatusCode;
                 }
                 else
