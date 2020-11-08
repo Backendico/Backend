@@ -709,7 +709,7 @@ namespace Backend2.Pages.Apis.Models.Player
 
                     var Message = new MailMessage("recovery@backendi.ir", Email, "Recovery Account", bodyMessage);
 
-                    SendMail(Message, (s, e) => { }, () => { });
+                    SendMail_Recovery(Message, (s, e) => { }, () => { });
 
 
                     if (Result.ModifiedCount >= 1)
@@ -775,6 +775,21 @@ namespace Backend2.Pages.Apis.Models.Player
                     var Update = new UpdateDefinitionBuilder<BsonDocument>().Set("Account.Password", Password);
 
                     var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
+                    
+                    
+                    var player = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(Filter).Result.SingleAsync();
+
+                    //send mail status
+                    var body = "Your account password changed successfully" +
+                        "\n\n" +
+                        $"New password : {Password}" +
+                        "Thanks" +
+                        "\n" +
+                        "backendi.ir";
+                    var message = new MailMessage("recovery@backendi.ir", player["Account"]["Email"].AsString, "Password Changed", body);
+
+
+                    SendMail_Recovery(message, (s, e) => { }, () => { });
 
                     if (Result.ModifiedCount >= 1)
                     {
