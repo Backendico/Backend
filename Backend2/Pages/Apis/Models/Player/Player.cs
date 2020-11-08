@@ -772,7 +772,7 @@ namespace Backend2.Pages.Apis.Models.Player
                 try
                 {
                     var Filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
-                    var Update = new UpdateDefinitionBuilder<BsonDocument>().Set("Account.Password", Password);
+                    var Update = new UpdateDefinitionBuilder<BsonDocument>().Set("Account.Password", Password).Set("Account.RecoveryCode", 0);
 
                     var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
                     
