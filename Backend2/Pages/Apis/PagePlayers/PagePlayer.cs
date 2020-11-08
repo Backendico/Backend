@@ -53,9 +53,9 @@ namespace Backend.Controllers.Players
         /// list and count players
         /// </returns>
         [HttpPost]
-        public async Task<string> ReciveDetailPagePlayer(string Token, string Studio,string Count)
+        public async Task<string> ReciveDetailPagePlayer(string Token, string Studio, string Count)
         {
-            var result = await player.ReciveDetailPagePlayer(Token, Studio,int.Parse(Count));
+            var result = await player.ReciveDetailPagePlayer(Token, Studio, int.Parse(Count));
 
             if (result.Length >= 1)
             {
@@ -244,6 +244,47 @@ namespace Backend.Controllers.Players
             }
         }
 
+        [HttpPost]
+        public async Task<int> RecoveryStep1(string Token, string Studio, string TokenPlayer, string Email)
+        {
+            var Result = await player.Recovery_Step1(Token, Studio, TokenPlayer, Email);
+            if (Result >= 1)
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+
+            return Result;
+        }
+
+        [HttpPost]
+        public async Task RecoveryStep2(string Token, string Studio, string TokenPlayer, string Email,int Code)
+        {
+            if (await player.Recovery_Step2(Token, Studio, TokenPlayer, Email,Code))
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+        }
+
+        [HttpPost]
+        public async Task ChangePassword(string Token, string Studio, string TokenPlayer, string Password)
+        {
+            if (await player.ChangePassword(Token, Studio, TokenPlayer,Password))
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+        }
 
     }
 }

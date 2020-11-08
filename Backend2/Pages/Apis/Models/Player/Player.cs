@@ -676,5 +676,125 @@ namespace Backend2.Pages.Apis.Models.Player
 
 
 
+
+        public async Task<int> Recovery_Step1(string Token, string Studio, string TokenPlayer, string Email)
+        {
+            if (await CheackToken(Token))
+            {
+                try
+                {
+                    var code = new Random().Next();
+
+                    var Filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) }, { "Account.Email", Email } };
+                    var Update = new UpdateDefinitionBuilder<BsonDocument>().Set("Account.RecoveryCode", code);
+
+                    var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
+
+
+                    var bodyMessage =
+                       $"Hello dear " +
+                       "\n" +
+                       "\n" +
+                       "This email was sent to your request to recover your account." +
+                       "\n" +
+                       "Ignore this email if you have not submitted an account recovery request.  " +
+                       "\n\n" +
+                       "Or use this code to recover the account." +
+                       "\n\n" +
+                       $"Code : {code}" +
+                       "\n\n\n" +
+                       "Thanks for choosing us" +
+                       "\n" +
+                       "Backendi.ir";
+
+                    var Message = new MailMessage("recovery@backendi.ir", Email, "Recovery Account", bodyMessage);
+
+                    SendMail(Message, (s, e) => { }, () => { });
+
+
+                    if (Result.ModifiedCount >= 1)
+                    {
+                        return code;
+                    }
+                    else
+                    {
+                        return 0;
+                    }
+
+                }
+                catch (Exception)
+                {
+                    return 0;
+                }
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        public async Task<bool> Recovery_Step2(string Token, string Studio, string TokenPlayer, string Email, int Code)
+        {
+            if (await CheackToken(Token))
+            {
+                try
+                {
+                    var Filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) }, { "Account.Email", Email }, { "Account.RecoveryCode", Code } };
+                    var Update = new UpdateDefinitionBuilder<BsonDocument>().Set("Account.RecoveryCode", 0);
+
+                    var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
+
+                    if (Result.ModifiedCount >= 1)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> ChangePassword(string Token, string Studio, string TokenPlayer,string Password)
+        {
+            if (await CheackToken(Token))
+            {
+                try
+                {
+                    var Filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
+                    var Update = new UpdateDefinitionBuilder<BsonDocument>().Set("Account.Password", Password);
+
+                    var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
+
+                    if (Result.ModifiedCount >= 1)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }

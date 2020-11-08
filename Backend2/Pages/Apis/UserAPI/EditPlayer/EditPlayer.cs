@@ -203,5 +203,50 @@ namespace Backend2.Pages.Apis.UserAPI.EditPlayer
 
         }
 
+
+        [HttpPost]
+        public async Task<int> RecoveryStep1(string Token, string Studio, string TokenPlayer, string Email)
+        {
+            var Result = await Player.Recovery_Step1(Token, Studio, TokenPlayer, Email);
+            if (Result >= 1)
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+
+            return Result;
+        }
+
+
+        [HttpPost]
+        public async Task RecoveryStep2(string Token, string Studio, string TokenPlayer, string Email, int Code)
+        {
+            if (await Player.Recovery_Step2(Token, Studio, TokenPlayer, Email, Code))
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+        }
+
+
+        [HttpPost]
+        public async Task ChangePassword(string Token, string Studio, string TokenPlayer, string Password)
+        {
+            if (await Player.ChangePassword(Token, Studio, TokenPlayer, Password))
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+        }
+
     }
 }
