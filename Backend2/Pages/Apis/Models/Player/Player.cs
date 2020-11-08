@@ -783,6 +783,7 @@ namespace Backend2.Pages.Apis.Models.Player
                     var body = "Your account password changed successfully" +
                         "\n\n" +
                         $"New password : {Password}" +
+                        $"\n" +
                         "Thanks" +
                         "\n" +
                         "backendi.ir";
