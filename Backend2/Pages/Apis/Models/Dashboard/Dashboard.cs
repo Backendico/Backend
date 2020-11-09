@@ -29,6 +29,7 @@ namespace Backend2.Pages.Apis.Models.Dashboard
                         {"PlayersMonetiz",new BsonDocument{ {"Totall",0 }, {"Count",0 } } },
                         {"Logs",new BsonDocument{ {"Count",0 },{"Totall",0 } } },
                         {"APIs",new BsonDocument{ {"Count",0 },{"Totall",0 } }},
+                        {"Achievements",new BsonDocument{ {"Count",0 },{"Totall",0 } }},
                     };
 
             try
@@ -185,7 +186,17 @@ namespace Backend2.Pages.Apis.Models.Dashboard
 
                     }
 
-                    //player & Leaderboard Totall
+                    try
+                    {
+                        var Monetiz = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } }).Result.SingleAsync();
+                        Result["Achievements"]["Count"] = Monetiz["Achievements"].AsBsonArray.Count;
+                    }
+                    catch (Exception)
+                    {
+
+                    }
+
+                    //player & Leaderboard & Monetiz Totall
                     try
                     {
                         var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Monetiz", 1 } } };
@@ -193,6 +204,7 @@ namespace Backend2.Pages.Apis.Models.Dashboard
                         var Monetiz = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } }, Option).Result.SingleAsync();
                         Result["PlayersMonetiz"]["Totall"] = Monetiz["Monetiz"]["Players"];
                         Result["Leaderboards"]["Totall"] = Monetiz["Monetiz"]["Leaderboards"];
+                        Result["Achievements"]["Totall"] = Monetiz["Monetiz"]["Achievements"];
                     }
                     catch (Exception)
                     {
@@ -252,10 +264,8 @@ namespace Backend2.Pages.Apis.Models.Dashboard
 
                     //Support
                     {
-
                         try
                         {
-
                             var Pipe1 = new[]
                             {
                             new BsonDocument{ {"$project",new BsonDocument { {"Support",1 } } } },
@@ -272,7 +282,6 @@ namespace Backend2.Pages.Apis.Models.Dashboard
                         catch (Exception)
                         {
                         }
-
                     }
 
                     return Result;
@@ -301,15 +310,15 @@ namespace Backend2.Pages.Apis.Models.Dashboard
             try
             {
 
-                var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Part", 0 } ,{"_id",0 } } };
+                var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Part", 0 }, { "_id", 0 } } };
 
-            return  await Client.GetDatabase("Users").GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "Part", "Setting" } },Option).Result.SingleAsync();
+                return await Client.GetDatabase("Users").GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "Part", "Setting" } }, Option).Result.SingleAsync();
             }
             catch (Exception)
             {
                 return new BsonDocument();
             }
-            
+
         }
     }
 }

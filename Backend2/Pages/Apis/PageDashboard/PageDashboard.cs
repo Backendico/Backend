@@ -107,7 +107,6 @@ namespace Backend2.Pages.Apis.PageDashboard
             return Result.ToString();
         }
 
-
         [HttpPost]
         public async Task<string> CheackUpdate()
         {
