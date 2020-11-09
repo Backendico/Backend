@@ -170,7 +170,8 @@ namespace Backend2.Pages.Apis.Models.Studio
                         Set("Monetiz.Apis", deserilse["Apis"]).
                          Set("Monetiz.Logs", deserilse["Logs"]).
                          Set("Monetiz.Players", deserilse["Players"]).
-                         Set("Monetiz.Cash", deserilse["Cash"]);
+                         Set("Monetiz.Achievements", deserilse["Achievements"]).
+                    Set("Monetiz.Cash", deserilse["Cash"]);
 
                     await Client.GetDatabase(NameStudio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update1);
 
