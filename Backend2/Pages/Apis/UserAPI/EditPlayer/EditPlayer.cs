@@ -42,19 +42,6 @@ namespace Backend2.Pages.Apis.UserAPI.EditPlayer
             }
         }
 
-        [HttpPost]
-        public async Task SendEmailRecovery(string Token, string studio, string TokenPlayer)
-        {
-            if (await Player.SendEmailRecovery(Token, studio, TokenPlayer) && await BasicAPIs.ReadWriteControll(studio, API.Write))
-            {
-                Response.StatusCode = Ok().StatusCode;
-            }
-            else
-            {
-                Response.StatusCode = BadRequest().StatusCode;
-            }
-
-        }
 
         [HttpPost]
         public async Task AddCountry(string Token, string Studio, string TokenPlayer, string Country)
