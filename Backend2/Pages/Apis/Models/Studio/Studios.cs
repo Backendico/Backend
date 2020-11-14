@@ -17,31 +17,32 @@ namespace Backend2.Pages.Apis.Models.Studio
                 // Step1:
                 var NameDataBase = NameStudio + "+" + ObjectId.GenerateNewId();
                 var ModelDataBase = new BsonDocument {
-                { "_id","Setting"},
+                    { "_id","Setting"},
                     {"Logs",new BsonArray() },
                     {"APIs",new BsonDocument{ {"Read",0 },{"Write" ,0 } } },
-                { "Setting",
-                    new BsonDocument
-                    {
-                        {"Name",NameStudio },
-                        { "Type","Game"},
-                        {"Token",ObjectId.GenerateNewId() },
-                        { "Creator",Token},
-                        { "Created",DateTime.Now},
-                        {"Database",NameDataBase }}
+                    { "Setting",
+                        new BsonDocument
+                        {
+                            {"Name",NameStudio },
+                            { "Type","Game"},
+                            {"Token",ObjectId.GenerateNewId() },
+                            { "Creator",Token},
+                            { "Created",DateTime.Now},
+                            {"Database",NameDataBase }}
                     }
-
-               ,{"Achievements",new BsonArray() },
-
+                    ,{"Achievements",new BsonArray() },
+                    {"Support" ,new BsonArray()},
                     { "Leaderboards",new BsonDocument{ {"List",new BsonDocument { } } } },
                     { "Monetiz", new BsonDocument {
-                    { "PaymentList",new BsonArray()},
-                    { "Leaderboards", 3 },
-                     { "Apis", 90000 },
-                       { "Logs", 200 },
+                        { "PaymentList",new BsonArray()},
+                        { "Leaderboards", 3 },
+                        { "Apis", 90000 },
+                        { "Logs", 200 },
                         {"Achievements",4 },
                         {"Cash",0 },
-                    { "Players", 5000 } } } };
+                        { "Players", 5000 } } }
+                };
+
 
                 await Client.GetDatabase(NameDataBase).GetCollection<BsonDocument>("Setting").InsertOneAsync(ModelDataBase);
 
