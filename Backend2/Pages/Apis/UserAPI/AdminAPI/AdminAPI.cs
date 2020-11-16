@@ -63,9 +63,9 @@ namespace Backend2.Pages.Apis.UserAPI.AdminAPI
         }
 
         [HttpPost]
-        public async Task AddLog(string Token, string Studio, string Header, string Description, string detail, string IsNotifaction)
+        public async Task AddLog(string Token, string Studio, string Header, string Description, string Detail, string IsNotification)
         {
-            if (await Log.AddLog(Token, Studio, Header, Description, detail, IsNotifaction) && await BasicAPIs.ReadWriteControll(Studio, API.Write))
+            if (await Log.AddLog(Token, Studio, Header, Description, Detail, IsNotification) && await BasicAPIs.ReadWriteControll(Studio, API.Write))
             {
                 Response.StatusCode = Ok().StatusCode;
             }
