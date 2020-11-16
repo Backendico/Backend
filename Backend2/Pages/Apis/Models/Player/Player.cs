@@ -373,6 +373,23 @@ namespace Backend2.Pages.Apis.Models.Player
             }
         }
 
+
+        public async Task<BsonDocument> LoginPlayer(string Token,string Studio,string Username,string Password)
+        {
+            if (await CheackToken(Token))
+            {
+                var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Account", 1 } } };
+                var Player = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(new BsonDocument { { "Account.Username", Username },{"Account.Password",Password } }, Option).Result.SingleAsync();
+
+                return Player;
+            }
+            else
+            {
+                return new BsonDocument();
+            }
+        }
+
+
         public async Task<bool> AddAvatar(string Token, string Studio, string TokenPlayer, string Link)
         {
             if (await CheackToken(Token))

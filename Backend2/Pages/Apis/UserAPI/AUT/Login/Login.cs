@@ -15,6 +15,7 @@ namespace Backend2.Pages.Apis.UserAPI.AUT.Login
     {
         Player Player = new Player();
 
+        [HttpPost]
         /// <summary>
         /// Return PlayerAccount
         /// </summary>
@@ -38,6 +39,21 @@ namespace Backend2.Pages.Apis.UserAPI.AUT.Login
                 Response.StatusCode = BadRequest().StatusCode;
                 return new BsonDocument().ToString();
             }
+        }
+
+        [HttpPost]
+        public async Task<string> UsernamePassword(string Token, string Studio, string Username, string Password)
+        {
+            var Result = await Player.LoginPlayer(Token, Studio, Username, Password);
+            if (Result.ElementCount <= 1)
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+            return Result.ToString();
         }
 
     }
