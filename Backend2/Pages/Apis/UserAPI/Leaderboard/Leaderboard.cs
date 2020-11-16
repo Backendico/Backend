@@ -78,6 +78,7 @@ namespace Backend2.Pages.Apis.UserAPI.Leaderboard
             }
         }
 
+        [HttpDelete]
         public async Task RemovePlayer(string Token, string Studio, string TokenPlayer, string NameLeaderboard)
         {
             if (await LeaderboardModel.Remove(Token, Studio, TokenPlayer, NameLeaderboard) && await BasicAPIs.ReadWriteControll(Studio, API.Write))
