@@ -166,6 +166,20 @@ namespace Backend2.Pages.Apis.Models
             {
             }
         }
+        public static void SendMail_Info(MailMessage Message)
+        {
+            SmtpClient Mailsender = new SmtpClient("mail.backendi.ir", 587);
+            Mailsender.Credentials = new NetworkCredential("info@backendi.ir", "85245685hHH!");
+
+            try
+            {
+                Mailsender.Send(Message);
+            }
+            catch (Exception)
+            {
+            }
+        }
+
 
         /// <summary>
         /// Send Signal notifaction

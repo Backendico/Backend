@@ -255,6 +255,19 @@ namespace Backend2.Pages.Apis.Models.Studio
                         await Client.GetDatabase(Studios.AsString).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update1);
                     }
 
+
+                    //send Email
+                    var Body = $"Hi Dear " +
+                        $"Your token was successfully changed in all studios" +
+                        "\n" +
+                        $"Previous token: {Token}" +
+                        $"New token: {NewToken}" +
+                        $"\n\n" +
+                        $"Thanks" +
+                        $"\n" +
+                        $"Backendi.ir";
+                    SendMail_Info(new System.Net.Mail.MailMessage("Info@Backendi.ir", SettingUser["AccountSetting"]["Email"].AsString, "Token Change", Body));
+                   
                     return true;
                 }
                 catch (Exception)
