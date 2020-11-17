@@ -250,25 +250,33 @@ namespace Backend2.Pages.Apis.Models.Studio
 
                     foreach (var Studios in SettingUser["Games"].AsBsonArray)
                     {
-                        var Update1 = new UpdateDefinitionBuilder<BsonDocument>().Set( "Setting.Creator", NewToken );
+                        var Update1 = new UpdateDefinitionBuilder<BsonDocument>().Set("Setting.Creator", NewToken);
 
                         await Client.GetDatabase(Studios.AsString).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update1);
                     }
 
 
                     //send Email
-                    var Body = $"Hi Dear " +
-                        $"Your token was successfully changed in all studios" +
-                        "\n" +
-                        $"Previous token: {Token}" +
-                        "\n" +
-                        $"New token: {NewToken}" +
-                        "\n\n" +
-                        $"Thanks" +
-                        "\n" +
-                        $"Backendi.ir";
-                    SendMail_Info(new System.Net.Mail.MailMessage("info", SettingUser["AccountSetting"]["Email"].AsString, "Token Change", Body));
-                   
+                    try
+                    {
+
+                        var Body = $"Hi Dear " +
+                            $"Your token was successfully changed in all studios" +
+                            "\n" +
+                            $"Previous token: {Token}" +
+                            "\n" +
+                            $"New token: {NewToken}" +
+                            "\n\n" +
+                            $"Thanks" +
+                            "\n" +
+                            $"Backendi.ir";
+                        SendMail_Info(new System.Net.Mail.MailMessage("info@backendi.ir", SettingUser["AccountSetting"]["Email"].AsString, "Token Change", Body));
+
+                    }
+                    catch (Exception)
+                    {
+
+                    }
                     return true;
                 }
                 catch (Exception)
