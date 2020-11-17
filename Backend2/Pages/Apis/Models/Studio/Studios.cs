@@ -261,12 +261,13 @@ namespace Backend2.Pages.Apis.Models.Studio
                         $"Your token was successfully changed in all studios" +
                         "\n" +
                         $"Previous token: {Token}" +
+                        "\n" +
                         $"New token: {NewToken}" +
-                        $"\n\n" +
+                        "\n\n" +
                         $"Thanks" +
-                        $"\n" +
+                        "\n" +
                         $"Backendi.ir";
-                    SendMail_Info(new System.Net.Mail.MailMessage("Info@Backendi.ir", SettingUser["AccountSetting"]["Email"].AsString, "Token Change", Body));
+                    SendMail_Info(new System.Net.Mail.MailMessage("info", SettingUser["AccountSetting"]["Email"].AsString, "Token Change", Body));
                    
                     return true;
                 }
