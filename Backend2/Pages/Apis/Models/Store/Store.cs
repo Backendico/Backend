@@ -15,7 +15,7 @@ namespace Backend2.Pages.Apis.Models.Store
             {
                 var Update = new UpdateDefinitionBuilder<BsonDocument>().Push("Store", Detail);
 
-                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Users").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update);
+                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update);
 
                 if (Result.ModifiedCount >= 1)
                 {
