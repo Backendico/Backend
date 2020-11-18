@@ -14,18 +14,32 @@ namespace Backend2.Pages.Apis.PageStore
     {
         Store Store = new Store();
 
+        [HttpPost]
         public async Task AddStore(string Token, string Studio, string Detail)
         {
-            if (await Store.AddStore(Token,Studio,BsonDocument.Parse(Detail)))
+            if (await Store.AddStore(Token, Studio, BsonDocument.Parse(Detail)))
             {
                 Response.StatusCode = Ok().StatusCode;
             }
             else
             {
-                Response.StatusCode = BadRequest().StatusCode ;
+                Response.StatusCode = BadRequest().StatusCode;
             }
-            
+        }
 
+        [HttpPost]
+        public async Task<string> ReciveStores(string Token, string Studio)
+        {
+            var Result = await Store.ReciveStores(Token, Studio);
+            if (Result.ElementCount >= 1)
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+            return Result.ToString();
         }
 
     }

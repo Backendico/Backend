@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ namespace Backend2.Pages.Apis.Models.Store
         {
             if (await CheackToken(Token))
             {
-                Detail.Add(new BsonElement("Token",ObjectId.GenerateNewId()));
+                Detail.Add(new BsonElement("Token", ObjectId.GenerateNewId()));
                 Detail.Add(new BsonElement("Created", DateTime.Now));
 
                 var Update = new UpdateDefinitionBuilder<BsonDocument>().Push("Store", Detail);
@@ -35,6 +36,23 @@ namespace Backend2.Pages.Apis.Models.Store
                 return false;
             }
 
+        }
+
+        internal async Task<BsonDocument> ReciveStores(string Token, string Studio)
+        {
+            if (await CheackToken(Token))
+            {
+
+                var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Store", 1 } } };
+
+                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } }, Option).Result.SingleAsync();
+
+                return Result;
+            }
+            else
+            {
+                return new BsonDocument();
+            }
         }
     }
 }
