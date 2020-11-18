@@ -13,7 +13,7 @@ namespace Backend2.Pages.Apis.Models.Store
         {
             if (await CheackToken(Token))
             {
-                Detail.Add(new BsonElement("ID",ObjectId.GenerateNewId()));
+                Detail.Add(new BsonElement("Token",ObjectId.GenerateNewId()));
                 Detail.Add(new BsonElement("Created", DateTime.Now));
 
                 var Update = new UpdateDefinitionBuilder<BsonDocument>().Push("Store", Detail);
