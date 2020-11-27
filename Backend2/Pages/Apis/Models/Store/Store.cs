@@ -77,5 +77,30 @@ namespace Backend2.Pages.Apis.Models.Store
                 return false;
             }
         }
+
+        internal async Task<BsonDocument> ReciveProduct(string Token, string Studio, string TokenProduct)
+        {
+
+            if (await CheackToken(Token))
+            {
+
+                var Filter = new BsonDocument[]
+                {
+                    new BsonDocument{ {"$project",new BsonDocument { { "Store",1} } } },
+                    new BsonDocument{ {"$unwind",new BsonDocument { {"path","$Store" } } } },
+                    new BsonDocument{{"$match",new BsonDocument { { "Store.Token", ObjectId.Parse(TokenProduct) } } }
+                    }
+                };
+
+                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Filter).Result.SingleAsync();
+
+                return Result;
+            }
+            else
+            {
+                return new BsonDocument();
+            }
+        }
+
     }
 }
