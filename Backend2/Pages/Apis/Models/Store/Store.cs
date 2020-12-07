@@ -55,12 +55,20 @@ namespace Backend2.Pages.Apis.Models.Store
             }
         }
 
-        internal async Task<bool> AddProduct(string Token, string Studio, BsonDocument Detail)
+        internal async Task<bool> AddProduct(string Token, string Studio, ObjectId Token_Studio, BsonDocument Detail)
         {
             if (await CheackToken(Token))
             {
-                var Update = new UpdateDefinitionBuilder<BsonDocument>().Push("Store", Detail);
-                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update);
+                var Update = new UpdateDefinitionBuilder<BsonDocument>().Push("Store.$[f].Products", Detail);
+
+                var arrayFilters = new[]
+                {
+                    new BsonDocumentArrayFilterDefinition<BsonDocument>(
+                        new BsonDocument("f.Token",
+                        new BsonDocument("$in", new BsonArray(new [] { Token_Studio })))),
+                };
+
+                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update, new UpdateOptions { ArrayFilters = arrayFilters });
 
                 if (Result.ModifiedCount >= 1)
                 {
@@ -77,6 +85,7 @@ namespace Backend2.Pages.Apis.Models.Store
                 return false;
             }
         }
+
 
         internal async Task<BsonDocument> ReciveProduct(string Token, string Studio, string TokenProduct)
         {
