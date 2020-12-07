@@ -55,7 +55,7 @@ namespace Backend2.Pages.Apis.Models.Store
             }
         }
 
-        internal async Task<bool> AddProduct(string Token, string Studio, ObjectId Token_Studio, BsonDocument Detail)
+        internal async Task<bool> AddProduct(string Token, string Studio, ObjectId Token_Store, BsonDocument Detail)
         {
             if (await CheackToken(Token))
             {
@@ -65,7 +65,7 @@ namespace Backend2.Pages.Apis.Models.Store
                 {
                     new BsonDocumentArrayFilterDefinition<BsonDocument>(
                         new BsonDocument("f.Token",
-                        new BsonDocument("$in", new BsonArray(new [] { Token_Studio })))),
+                        new BsonDocument("$in", new BsonArray(new [] { Token_Store })))),
                 };
 
                 var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update, new UpdateOptions { ArrayFilters = arrayFilters });
