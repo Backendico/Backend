@@ -1,6 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
+using MongoDB.Driver.Core.Operations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -63,10 +64,7 @@ namespace Backend2.Pages.Apis.Models.Store
 
                 var arrayFilters = new[]
                 {
-                    new BsonDocumentArrayFilterDefinition<BsonDocument>(
-                        new BsonDocument("f.Token",
-                        new BsonDocument("$in", new BsonArray(new [] { Token_Store })))),
-                };
+                    new BsonDocumentArrayFilterDefinition<BsonDocument>(new BsonDocument("f.Token",new BsonDocument("$in", new BsonArray(new [] { Token_Store })))),};
 
                 var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update, new UpdateOptions { ArrayFilters = arrayFilters });
 
@@ -111,5 +109,35 @@ namespace Backend2.Pages.Apis.Models.Store
             }
         }
 
+        internal async Task<bool> SaveStore(string Token, string Studio, ObjectId TokenStore, string DetailStore)
+        {
+            if (await CheackToken(Token))
+            {
+
+                var update = new UpdateDefinitionBuilder<BsonDocument>().Set("Store.$[f]", BsonDocument.Parse(DetailStore));
+
+                var Arrayfilter = new[]
+                {
+                new BsonDocumentArrayFilterDefinition<BsonDocument>(new BsonDocument{
+                {"f.Token",new BsonDocument{ {"$in",new BsonArray(new[] {TokenStore }) } } }
+                })
+            };
+
+                var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, update, new UpdateOptions() { ArrayFilters = Arrayfilter });
+                if (result.MatchedCount >= 1)
+                {
+
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }
