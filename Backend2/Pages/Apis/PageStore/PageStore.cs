@@ -44,9 +44,9 @@ namespace Backend2.Pages.Apis.PageStore
 
 
         [HttpPost]
-        public async Task AddProduct(string Token,string Studio,string TokenStore,string  Detail)
+        public async Task AddProduct(string Token, string Studio, string TokenStore, string Detail)
         {
-            if (await Store.AddProduct(Token,Studio,ObjectId.Parse(TokenStore),BsonDocument.Parse(Detail)))
+            if (await Store.AddProduct(Token, Studio, ObjectId.Parse(TokenStore), BsonDocument.Parse(Detail)))
             {
                 Response.StatusCode = Ok().StatusCode;
             }
@@ -56,7 +56,19 @@ namespace Backend2.Pages.Apis.PageStore
             }
         }
 
-        
+
+        [HttpPost]
+        public async Task SaveStore(string Token, string Studio, string TokenStore, string DetailStore)
+        {
+            if (await Store.SaveStore(Token, Studio, ObjectId.Parse(TokenStore), DetailStore))
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+        }
 
     }
 }

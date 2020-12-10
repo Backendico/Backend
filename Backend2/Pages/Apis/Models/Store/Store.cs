@@ -121,7 +121,7 @@ namespace Backend2.Pages.Apis.Models.Store
                 new BsonDocumentArrayFilterDefinition<BsonDocument>(new BsonDocument{
                 {"f.Token",new BsonDocument{ {"$in",new BsonArray(new[] {TokenStore }) } } }
                 })
-            };
+                };
 
                 var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, update, new UpdateOptions() { ArrayFilters = Arrayfilter });
                 if (result.MatchedCount >= 1)
