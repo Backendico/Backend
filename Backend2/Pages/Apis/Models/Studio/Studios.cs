@@ -87,9 +87,7 @@ namespace Backend2.Pages.Apis.Models.Studio
                     finalResult["Settings"].AsBsonArray.Add(Setting);
                 }
 
-
-                //Control Write read
-
+                finalResult.Add("ServerTime", DateTime.Now.Ticks);
 
                 return finalResult.ToString();
             }
