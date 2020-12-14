@@ -98,7 +98,6 @@ namespace Backend2.Pages.Apis.Models.Studio
 
         }
 
-
         public async Task<bool> Delete(string Token, string NameStudio)
         {
             if (await CheackToken(Token))
@@ -289,5 +288,6 @@ namespace Backend2.Pages.Apis.Models.Studio
                 return false;
             }
         }
+   
     }
 }

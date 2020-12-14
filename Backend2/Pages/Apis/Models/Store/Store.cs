@@ -56,59 +56,6 @@ namespace Backend2.Pages.Apis.Models.Store
             }
         }
 
-        internal async Task<bool> AddProduct(string Token, string Studio, ObjectId Token_Store, BsonDocument Detail)
-        {
-            if (await CheackToken(Token))
-            {
-                var Update = new UpdateDefinitionBuilder<BsonDocument>().Push("Store.$[f].Products", Detail);
-
-                var arrayFilters = new[]
-                {
-                    new BsonDocumentArrayFilterDefinition<BsonDocument>(new BsonDocument("f.Token",new BsonDocument("$in", new BsonArray(new [] { Token_Store })))),};
-
-                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update, new UpdateOptions { ArrayFilters = arrayFilters });
-
-                if (Result.ModifiedCount >= 1)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-
-        internal async Task<BsonDocument> ReciveProduct(string Token, string Studio, string TokenProduct)
-        {
-
-            if (await CheackToken(Token))
-            {
-
-                var Filter = new BsonDocument[]
-                {
-                    new BsonDocument{ {"$project",new BsonDocument { { "Store",1} } } },
-                    new BsonDocument{ {"$unwind",new BsonDocument { {"path","$Store" } } } },
-                    new BsonDocument{{"$match",new BsonDocument { { "Store.Token", ObjectId.Parse(TokenProduct) } } }
-                    }
-                };
-
-                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Filter).Result.SingleAsync();
-
-                return Result;
-            }
-            else
-            {
-                return new BsonDocument();
-            }
-        }
-
         internal async Task<bool> SaveStore(string Token, string Studio, ObjectId TokenStore, string DetailStore)
         {
             if (await CheackToken(Token))
@@ -139,5 +86,28 @@ namespace Backend2.Pages.Apis.Models.Store
                 return false;
             }
         }
+
+
+        public async Task<BsonDocument> ReciveAbstractStores(string Token, string Studio)
+        {
+            if (await CheackToken(Token))
+            {
+                var pipe = new[]
+                {
+                    new BsonDocument{ {"$unwind","$Store" } },
+                    new BsonDocument{ {"$project",new BsonDocument { {"Store.Products",0 } } } },
+                    new BsonDocument{{"$group",new BsonDocument { {"_id","$_id" },{"Stores",new BsonDocument { {"$push","$Store" } } } } }}
+                };
+
+                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(pipe).Result.SingleAsync();
+                return Result;
+            }
+            else
+            {
+               return  new BsonDocument();
+            }
+        }
+
+       
     }
 }
