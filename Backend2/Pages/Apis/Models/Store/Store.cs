@@ -104,10 +104,36 @@ namespace Backend2.Pages.Apis.Models.Store
             }
             else
             {
-               return  new BsonDocument();
+                return new BsonDocument();
             }
         }
 
-       
+        public async Task<BsonDocument> ReciveProducts(string Token, string Studio, ObjectId TokenStore)
+        {
+            if (await CheackToken(Token))
+            {
+
+                var Pipe = new[]
+                {
+                    new BsonDocument{ {"$unwind","$Store" } },
+                    new BsonDocument{ { "$match",new BsonDocument{ { "Store.Token", TokenStore } } } },
+                    new BsonDocument{{"$project",new BsonDocument { {"Store.Products", 1 } } }}
+                };
+
+                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
+
+                return Result;
+            }
+            else
+            {
+                return new BsonDocument();
+            }
+        }
+
+        public async Task<bool> AddPayment(string Token,string Studio,ObjectId TokenStore,ObjectId TokenPlayer)
+        {
+
+        }
+
     }
 }
