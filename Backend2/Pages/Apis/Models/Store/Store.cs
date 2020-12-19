@@ -130,8 +130,40 @@ namespace Backend2.Pages.Apis.Models.Store
             }
         }
 
-        public async Task<bool> AddPayment(string Token,string Studio,ObjectId TokenStore,ObjectId TokenPlayer)
+        public async Task<bool> AddPayment(string Token, string Studio, ObjectId TokenStore, ObjectId TokenPlayer, string Detail)
         {
+            if (await CheackToken(Token))
+            {
+
+                var DetailPayment = new BsonDocument
+                {
+                    {"Token",ObjectId.GenerateNewId() },
+                    {"Created",DateTime.Now },
+                    {"Player",TokenPlayer },
+                    {"Detail",Detail }
+                };
+
+                var Update = new UpdateDefinitionBuilder<BsonDocument>().Push("Store.$[f].Payments", DetailPayment);
+                var ArrayFilters = new[]
+                {
+                    new BsonDocumentArrayFilterDefinition<BsonDocument>(new BsonDocument{ {"f.Token",new BsonDocument { {"$in",new BsonArray(new[] {TokenStore }) } } } })
+                };
+
+                var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update, new UpdateOptions { ArrayFilters = ArrayFilters });
+
+                if (Result.MatchedCount >= 1)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
 
         }
 

@@ -49,6 +49,18 @@ namespace Backend2.Pages.Apis.UserAPI.Store
             return Result.ToString();
         }
 
+        [HttpPost]
+        public async Task AddPayments(string Token, string Studio, string TokenStore, string TokenPlayer,string Detail)
+        {
+            if (await ModelStore.AddPayment(Token, Studio, ObjectId.Parse(TokenStore), ObjectId.Parse(TokenPlayer),Detail))
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+        }
     }
 
 }
