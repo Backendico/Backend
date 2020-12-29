@@ -55,6 +55,19 @@ namespace Backend2.Pages.Apis.PageStore
             }
         }
 
-      
+        [HttpDelete]
+        public async Task RemoveStore(string Token, string Studio, string Detail)
+        {
+            if (await Store.DeleteSotre(Token, Studio, BsonDocument.Parse(Detail)))
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+
+        }
+
     }
 }

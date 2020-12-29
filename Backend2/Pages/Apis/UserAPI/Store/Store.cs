@@ -3,6 +3,7 @@ using Backend2.Pages.Apis.PageStore;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Driver.Core.Clusters.ServerSelectors;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,9 +51,9 @@ namespace Backend2.Pages.Apis.UserAPI.Store
         }
 
         [HttpPost]
-        public async Task AddPayments(string Token, string Studio, string TokenStore, string TokenPlayer,string Detail)
+        public async Task AddPayments(string Token, string Studio, string TokenStore, string TokenPlayer, string Detail)
         {
-            if (await ModelStore.AddPayment(Token, Studio, ObjectId.Parse(TokenStore), ObjectId.Parse(TokenPlayer),Detail))
+            if (await ModelStore.AddPayment(Token, Studio, ObjectId.Parse(TokenStore), ObjectId.Parse(TokenPlayer), Detail))
             {
                 Response.StatusCode = Ok().StatusCode;
             }
@@ -61,6 +62,10 @@ namespace Backend2.Pages.Apis.UserAPI.Store
                 Response.StatusCode = BadRequest().StatusCode;
             }
         }
+
+
+   
+
     }
 
 }
