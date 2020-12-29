@@ -80,7 +80,6 @@ namespace Backend2.Pages.Apis.Models.Player
 
                 var Filters = new FindOptions<BsonDocument, BsonDocument>();
                 Filters.Limit = Count;
-                Filters.Projection = new BsonDocument { { "Account.Password", 0 } };
                 Filters.Sort = new BsonDocument { { "Account.Created", -1 } };
                 var Players = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync("{}", Filters);
 
