@@ -14,27 +14,22 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
 {
     public class Leaderboard : BasicAPIs
     {
+        //pass
         public async Task<BsonDocument> ReciveLeaderboards(string Token, string Studio)
         {
             try
             {
                 if (await CheackToken(Token))
                 {
-                    var Filter = new BsonDocument { { "_id", "Setting" } };
-                    var options = new FindOptions<BsonDocument>();
-                    options.Projection = new BsonDocument { { $"Leaderboard.History", 0 } };
-                    var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(Filter).Result.SingleAsync();
-
-                    foreach (var item in Result["Leaderboards"]["List"].AsBsonDocument)
+                    var Pipe = new[]
                     {
-                        var F = new BsonDocument { { $"Leaderboards.List.{item.Name}", new BsonDocument { { "$gte", long.MinValue } } } };
+                        new BsonDocument { {"$unwind" ,"$Leaderboards" } },
+                        new BsonDocument{{"$group",new BsonDocument { {"_id","Leaderboard List " },{"List",new BsonDocument { {"$push", "$Leaderboards"} } } } }}
+                    };
+                    var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync<BsonDocument>();
 
-                        var Count = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").CountDocumentsAsync(F);
 
-                        Result["Leaderboards"]["List"][item.Name].AsBsonDocument.Add("Count", Count);
-                    }
-
-                    return Result["Leaderboards"]["List"].ToBsonDocument();
+                    return Result;
                 }
                 else
                 {
@@ -49,19 +44,22 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
             }
         }
 
+        //pass
         public async Task<bool> CreatLeaderBoard(string Token, string Studio, string DetailLeaderboard)
         {
             var deserilseDetail = BsonDocument.Parse(DetailLeaderboard);
 
-            if (await CheackToken(Token) && await CheackLeaderboardName(Studio, deserilseDetail["Name"].ToString()) != true)
+            if (await CheackToken(Token) && !await CheackLeaderboardName(Studio,deserilseDetail["Name"].AsString))
             {
                 //init values from backend
                 deserilseDetail.Add("Token", ObjectId.GenerateNewId());
                 deserilseDetail.Add("Start", DateTime.Now);
 
+                var Newleaderboard = new BsonDocument { { "Settings", deserilseDetail }, { "Backups", new BsonArray() } };
+
                 //inject
                 var filter = new BsonDocument { { "_id", "Setting" } };
-                var Update = new UpdateDefinitionBuilder<BsonDocument>().Set($"Leaderboards.List.{deserilseDetail["Name"]}", deserilseDetail);
+                var Update = new UpdateDefinitionBuilder<BsonDocument>().Push($"Leaderboards", Newleaderboard);
 
                 await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindOneAndUpdateAsync(filter, Update);
 
@@ -73,6 +71,7 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
             }
         }
 
+        //pass
         /// <summary>
         /// Cheack Leaderboard Name
         /// </summary>
@@ -94,15 +93,16 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
             try
             {
                 var filter = new BsonDocument { { "_id", "Setting" } };
-                var option = new FindOptions<BsonDocument>();
-                option.Projection = new BsonDocument { { "Leaderboards.Histor", 0 } };
-                var Setting = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(filter, option).Result.SingleAsync();
 
-
-
-
-
-                if (Setting["Leaderboards"]["List"].AsBsonDocument.TryGetElement(NameLeaderbaord, out _))
+                var Pipe = new[]
+                {
+                    new BsonDocument{ {"$unwind","$Leaderboards" } },
+                    new BsonDocument{{"$match",new BsonDocument { { "Leaderboards.Settings.Name",NameLeaderbaord} } }},
+                    new BsonDocument{{"$limit",1}}
+                };
+                
+                var Leaderboards = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
+                if (Leaderboards.ElementCount>=1)
                 {
                     return true;
                 }
@@ -110,6 +110,7 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
                 {
                     return false;
                 }
+               
             }
             catch (Exception)
             {
@@ -117,7 +118,7 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
             }
         }
 
-
+        //pass
         public async Task<bool> EditLeaderBoard(string Token, string Studio, string DetailLeaderboard)
         {
             if (await CheackToken(Token))
@@ -125,8 +126,11 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
                 var DeserilseData = BsonDocument.Parse(DetailLeaderboard);
 
                 var filter = new BsonDocument { { "_id", "Setting" } };
-                var update = new UpdateDefinitionBuilder<BsonDocument>().Set($"Leaderboards.List.{DeserilseData["Name"]}", DeserilseData);
-                var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(filter, update);
+                var update = new UpdateDefinitionBuilder<BsonDocument>().Set("Leaderboards.$[f].Settings", DeserilseData);
+               
+                var FilterArray = new[] {new BsonDocumentArrayFilterDefinition<BsonDocument>(new BsonDocument("f.Settings.Token",new BsonDocument("$in",new BsonArray(new []{DeserilseData["Token"].AsObjectId }))))};
+
+                var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(filter, update, new UpdateOptions{ArrayFilters=FilterArray });
 
                 if (result.ModifiedCount >= 1)
                 {
@@ -184,6 +188,7 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
                 return "";
             }
         }
+
 
         public async Task<bool> Add(string Token, string Studio, string TokenPlayer, string NameLeaderboard, string Value)
         {
@@ -320,6 +325,7 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
                 }
 
             }
+      
         }
 
 
@@ -478,6 +484,7 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
             }
         }
 
+
         public async Task<bool> RemoveBackup(string Token, string Studio, string NameLeaderboard, string Version)
         {
             if (await CheackToken(Token))
@@ -502,6 +509,7 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
             }
 
         }
+
 
         public async Task<BsonDocument> DownloadBackup(string Token, string Studio, string NameLeaderboard, string Version)
         {
@@ -529,6 +537,7 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
 
         }
 
+
         public async Task<BsonDocument> SettingLeaderboard(string Token, string Studio, string NameLeaderboard)
         {
             if (await CheackToken(Token))
@@ -549,6 +558,7 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
             }
         }
 
+
         public async Task<BsonDocument> RecivePlayerLeaderboard(string Token, string Studio, string TokenPlayer)
         {
             if (await CheackToken(Token))
@@ -556,15 +566,13 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
                 var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Leaderboards", 1 }, { "_id", 0 } } };
 
                 return await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } }, Option).Result.SingleAsync();
+           
             }
             else
             {
                 return new BsonDocument();
             }
         }
-
-
-
 
     }
 }
