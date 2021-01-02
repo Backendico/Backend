@@ -7,8 +7,10 @@ using MongoDB.Driver.Core.Operations;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 
 namespace Backend2.Pages.Apis.Models.Leaderobard
@@ -196,7 +198,7 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
             try
             {
                 var Score = Int64.Parse(Value);
-                var DetailScore = new BsonDocument 
+                var DetailScore = new BsonDocument
                 {
                     {"Leaderboard",NameLeaderboard },
                     {"Score",Score }
@@ -520,31 +522,30 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
 
         }
 
-        //cheack
+        //Pass
         public async Task<bool> Reset(string Token, string Studio, string NameLeaderboard)
         {
             if (await CheackToken(Token))
             {
-                //remove all value in user
-                var Update = Builders<BsonDocument>.Update.Pull("Leaderboards", new BsonDocument { { "Leaderboard", NameLeaderboard } });
-
-                 await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateManyAsync("{}", Update);
-               
-                return true;
-
-
-                //reset start in setting
-                var filter = new BsonDocument { { "_id", "Setting" } };
-                var Update1 = new UpdateDefinitionBuilder<BsonDocument>().Set($"Leaderboards.List.{NameLeaderboard}.Start", DateTime.Now);
-
-                var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(filter, Update1);
-
-
-                if (result.ModifiedCount >= 1)
+                try
                 {
+                    //remove all value in user
+                    var Update = Builders<BsonDocument>.Update.Pull("Leaderboards", new BsonDocument { { "Leaderboard", NameLeaderboard } });
+
+                    await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateManyAsync("{}", Update);
+
+                    //reset start in setting
+                    var filter = new BsonDocument { { "_id", "Setting" } };
+                    var Update1 = new UpdateDefinitionBuilder<BsonDocument>().Set($"Leaderboards.$[f].Settings.Start", DateTime.Now);
+
+                    var FilterArray = new[] { new BsonDocumentArrayFilterDefinition<BsonDocument>(new BsonDocument("f.Settings.Name", new BsonDocument("$in", new BsonArray(new[] { NameLeaderboard })))) };
+
+                    await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(filter, Update1, new UpdateOptions() { ArrayFilters = FilterArray });
+
                     return true;
+
                 }
-                else
+                catch (Exception)
                 {
                     return false;
                 }
@@ -557,56 +558,74 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
         }
 
 
+        //pass
         public async Task<bool> Backup(string Token, string Studio, string NameLeaderboard)
         {
             try
             {
                 if (await CheackToken(Token))
                 {
-                    //find all players in leaderboard
-                    var filter = new BsonDocument { { $"Leaderboards.List.{NameLeaderboard}", new BsonDocument { { "$gt", long.MinValue } } } };
-                    var option = new FindOptions<BsonDocument>();
-                    option.Projection = new BsonDocument { { $"Leaderboards.List.{NameLeaderboard}", 1 }, { "Account.Token", 1 }, { "_id", 0 } };
-                    option.Sort = new BsonDocument { { $"Leaderboards.List.{NameLeaderboard}", -1 } };
-                    var Finder = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(filter, option).Result.ToListAsync();
 
-                    var Players = new BsonDocument { };
-                    var Rank = 0;
-
-                    foreach (var item in Finder)
+                    //find all player score
+                    var Pipe = new[]
                     {
-                        Players.Add(Rank.ToString(), new BsonDocument { { "Rank", Rank }, { "Token", item["Account"]["Token"] }, { "Value", item["Leaderboards"]["List"][NameLeaderboard] } });
-                        Rank++;
-                    }
+                        new BsonDocument{ {"$unwind","$Leaderboards" } },
+                        new BsonDocument{ {"$match",new BsonDocument("Leaderboards.Leaderboard",NameLeaderboard) } },
+                        new BsonDocument{ {"$project",new BsonDocument { {"_id",0 },{"Username","$Account.Username" },{"Token","$Account.Token" },{"Score","$Leaderboards.Score" } } } }
+                    };
 
-                    var Result = new BsonDocument();
+                    var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe).Result.ToListAsync();
 
-                    Result.Add("List", Players);
+                    var FinalResult = new BsonDocument();
+                    FinalResult.Add("List", new BsonArray());
 
-                    //find start and end
-                    var Setting = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } }).Result.SingleAsync();
-                    Result.Add("Detail", new BsonDocument
+                    Result.ForEach(T =>
                     {
-                        {"Start",Setting["Leaderboards"]["List"][NameLeaderboard]["Start"] },
-                        {"End",DateTime.Now }
+                        FinalResult["List"].AsBsonArray.Add(T);
                     });
 
-                    //inject to database
-                    var update1 = new UpdateDefinitionBuilder<BsonDocument>().Set($"Leaderboards.List.{NameLeaderboard}.Backups.{new Random().Next()}", Result.AsBsonDocument).Set($"Leaderboards.List.{NameLeaderboard}.Start", DateTime.Now);
 
-                    var FinalResult = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, update1);
+                    //find Time Leaderboards
+
+                    FinalResult.Add("Settings", new BsonDocument {
+                        {"End",DateTime.Now },
+                        {"Start","" }
+
+                    });
+
+                    var Pipe2 = new[]{
+                    new BsonDocument{ {"$unwind","$Leaderboards" } },
+                    new BsonDocument{ {"$match",new BsonDocument { {"Leaderboards.Settings.Name",NameLeaderboard } } } },
+                    new BsonDocument{ {"$project" ,new BsonDocument { {"Leaderboards",1 } } } }
+                    };
+
+                    var Time = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe2).Result.SingleAsync();
+
+                    FinalResult["Settings"]["Start"] = Time["Leaderboards"]["Settings"]["Start"];
+
+
+                    //reset time Leaderboard
+
+
+                    var filter2 = new BsonDocument { { "_id", "Setting" } };
+                    var Update2 = new UpdateDefinitionBuilder<BsonDocument>().Set($"Leaderboards.$[f].Settings.Start",DateTime.Now);
+
+                    var FilterArray2 = new[] { new BsonDocumentArrayFilterDefinition<BsonDocument>(new BsonDocument("f.Settings.Name", new BsonDocument("$in", new BsonArray(new[] { NameLeaderboard })))) };
+
+                    await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(filter2, Update2, new UpdateOptions() { ArrayFilters = FilterArray2 });
 
 
 
-                    if (FinalResult.ModifiedCount >= 1)
-                    {
-                        return true;
+                    //inject to list
+                    var filter = new BsonDocument { { "_id", "Setting" } };
+                    var Update1 = new UpdateDefinitionBuilder<BsonDocument>().Push($"Leaderboards.$[f].Backups", FinalResult);
 
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    var FilterArray = new[] { new BsonDocumentArrayFilterDefinition<BsonDocument>(new BsonDocument("f.Settings.Name", new BsonDocument("$in", new BsonArray(new[] { NameLeaderboard })))) };
+
+                    var ResultAdd = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(filter, Update1, new UpdateOptions() { ArrayFilters = FilterArray });
+
+                    return ResultAdd.ModifiedCount >= 1 ? true : false;
+
                 }
                 else
                 {
@@ -617,6 +636,9 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
             {
                 return false;
             }
+
+
+
         }
 
 

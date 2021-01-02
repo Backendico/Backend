@@ -228,14 +228,14 @@ namespace Backend2.Pages.Apis.UserAPI.AdminAPI
         [HttpPost]
         public async Task BackupLeaderboard(string Token, string Studio, string NameLeaderboard)
         {
-            if (await Leaderboard.Backup(Token, Studio, NameLeaderboard) && await BasicAPIs.ReadWriteControll(Studio, API.Write))
-            {
-                Response.StatusCode = Ok().StatusCode;
-            }
-            else
-            {
-                Response.StatusCode = BadRequest().StatusCode;
-            }
+            //if (await Leaderboard.Backup(Token, Studio, NameLeaderboard) && await BasicAPIs.ReadWriteControll(Studio, API.Write))
+            //{
+            //    Response.StatusCode = Ok().StatusCode;
+            //}
+            //else
+            //{
+            //    Response.StatusCode = BadRequest().StatusCode;
+            //}
         }
 
     }
