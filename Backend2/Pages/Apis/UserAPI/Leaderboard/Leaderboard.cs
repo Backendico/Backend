@@ -46,8 +46,8 @@ namespace Backend2.Pages.Apis.UserAPI.Leaderboard
             if (await BasicAPIs.ReadWriteControll(Studio, API.Read))
             {
 
-                var result = await LeaderboardModel.LeaderboardDetail(Token, Studio, NameLeaderboard, Count);
-                if (result.Length >= 1)
+                var result = await LeaderboardModel.LeaderboardDetail(Token, Studio, NameLeaderboard, int.Parse(Count));
+                if (result.ElementCount >= 1)
                 {
                     Response.StatusCode = Ok().StatusCode;
                 }
@@ -56,7 +56,7 @@ namespace Backend2.Pages.Apis.UserAPI.Leaderboard
                     Response.StatusCode = BadRequest().StatusCode;
                 }
 
-                return result;
+                return result.ToString();
             }
             else
             {

@@ -7,6 +7,7 @@ using MongoDB.Driver;
 using MongoDB.Driver.Core.Operations;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Linq;
@@ -152,44 +153,45 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
 
         }
 
-
-        public async Task<string> LeaderboardDetail(string Token, string Studio, string NameLeaderboard, string Count)
+        //pass
+        public async Task<BsonDocument> LeaderboardDetail(string Token, string Studio, string NameLeaderboard, int Count)
         {
             try
             {
                 if (await CheackToken(Token))
                 {
-                    var filter = new BsonDocument { { $"Leaderboards.List.{NameLeaderboard}", new BsonDocument { { "$gt", long.MinValue } } } };
-                    var option = new FindOptions<BsonDocument>();
-                    option.Projection = new BsonDocument { { $"Leaderboards.List.{NameLeaderboard}", 1 }, { "Account.Token", 1 }, { "_id", 0 } };
-                    option.Sort = new BsonDocument { { $"Leaderboards.List.{NameLeaderboard}", -1 } };
-                    option.Limit = int.Parse(Count);
-                    var Finder = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(filter, option).Result.ToListAsync();
+                    Count = Count >= 1 ? Count : 100;
 
-                    var result = new BsonDocument { };
-                    var Rank = 0;
-
-
-
-                    foreach (var item in Finder)
+                    var Pipe = new[] 
                     {
-                        result.Add(Rank.ToString(), new BsonDocument { { "Rank", Rank }, { "Token", item["Account"]["Token"] }, { "Value", item["Leaderboards"]["List"][NameLeaderboard] } });
-                        Rank++;
+                        new BsonDocument{{"$unwind","$Leaderboards"}},
+                        new BsonDocument{{"$match",new BsonDocument { {"Leaderboards.Leaderboard",NameLeaderboard } } }},
+                        new BsonDocument{{"$sort",new BsonDocument { {"Leaderboards.Score",-1 } } }},
+                        new BsonDocument{{"$limit",Count}},
+                        new BsonDocument{{"$addFields",new BsonDocument { {"Leaderboards.Username","$Account.Username" },{"Leaderboards.Token","$Account.Token" } } }},
+                        new BsonDocument{{"$project",new BsonDocument {{"Leaderboards",1 } }} },
+                    };
+
+                   var ListScore= await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe).Result.ToListAsync<BsonDocument>();
+                  
+                    var Result = new BsonDocument { { "List", new BsonArray() } };
+                    foreach (var item in ListScore)
+                    {
+                        Result["List"].AsBsonArray.Add(item);
                     }
 
-
-
-                    return result.ToString();
-
+                    
+                    return Result;
+                 
                 }
                 else
                 {
-                    return "";
+                    return new BsonDocument();
                 }
             }
             catch (Exception)
             {
-                return "";
+                return new BsonDocument();
             }
         }
 
@@ -657,7 +659,6 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
                         new BsonDocument{ {"$unwind","$Leaderboards" } },
                         new BsonDocument{ {"$match" ,new BsonDocument("Leaderboards.Settings.Name",NameLeaderboard )} },
                         new BsonDocument{{"$project",new BsonDocument { {"Leaderboards",new BsonDocument { {"$slice",new BsonArray() { "$Leaderboards.Backups",Count } } } } } }}
-
                     };
 
                     var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
@@ -712,7 +713,8 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
 
         }
 
-
+        //pass
+        [Obsolete("New version deleted") ]
         public async Task<BsonDocument> DownloadBackup(string Token, string Studio, string NameLeaderboard, string Version)
         {
             if (await CheackToken(Token))
@@ -739,17 +741,17 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
 
         }
 
-
+        //pass
         public async Task<BsonDocument> SettingLeaderboard(string Token, string Studio, string NameLeaderboard)
         {
             if (await CheackToken(Token))
             {
                 var Pipe = new[]
                 {
-                    new BsonDocument{ {"$project",new BsonDocument { {"Leaderboards",$"$Leaderboards.List.{NameLeaderboard}" } } } },
-                    new BsonDocument{{"$project",new BsonDocument { {"_id",0 },{ "Leaderboards.Backups", 0 } } }}
+                    new BsonDocument{ {"$unwind","$Leaderboards" } },
+                    new BsonDocument{{"$match",new BsonDocument { {"Leaderboards.Settings.Name",NameLeaderboard } } }},
+                    new BsonDocument{{"$project",new BsonDocument { {"Leaderboards.Settings",1 } } }}
                 };
-
 
 
                 return await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
@@ -760,7 +762,7 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
             }
         }
 
-
+        //pass
         public async Task<BsonDocument> RecivePlayerLeaderboard(string Token, string Studio, string TokenPlayer)
         {
             if (await CheackToken(Token))

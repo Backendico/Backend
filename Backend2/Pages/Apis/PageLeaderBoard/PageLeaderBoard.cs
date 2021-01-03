@@ -94,8 +94,8 @@ namespace Backend.Controllers.PageLeaderBoard
         [HttpPost]
         public async Task<string> Leaderboard(string Token, string Studio, string NameLeaderboard, string Count)
         {
-            var result = await LeaderboardModel.LeaderboardDetail(Token, Studio, NameLeaderboard, Count);
-            if (result.Length >= 1)
+            var result = await LeaderboardModel.LeaderboardDetail(Token, Studio, NameLeaderboard,int.Parse( Count));
+            if (result.ElementCount >= 1)
             {
                 Response.StatusCode = Ok().StatusCode;
             }
@@ -104,7 +104,7 @@ namespace Backend.Controllers.PageLeaderBoard
                 Response.StatusCode = BadRequest().StatusCode;
             }
 
-            return result;
+            return result.ToString();
         }
 
 
@@ -245,29 +245,6 @@ namespace Backend.Controllers.PageLeaderBoard
             {
                 Response.StatusCode = BadRequest().StatusCode;
             }
-        }
-
-        /// <summary>
-        /// download Backup
-        /// </summary>
-        /// <param name="Token"></param>
-        /// <param name="Studio"></param>
-        /// <param name="NameLeaderboard"></param>
-        /// <param name="Version"></param>
-        /// <returns></returns>
-        public async Task<string> DownloadBackup(string Token, string Studio, string NameLeaderboard, string Version)
-        {
-            var result = await LeaderboardModel.DownloadBackup(Token, Studio, NameLeaderboard, Version);
-
-            if (result.ElementCount >= 1)
-            {
-                Response.StatusCode = Ok().StatusCode;
-            }
-            else
-            {
-                Response.StatusCode = BadRequest().StatusCode;
-            }
-            return result.ToString();
         }
 
 
