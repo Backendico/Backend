@@ -210,9 +210,9 @@ namespace Backend.Controllers.PageLeaderBoard
         /// <param name="NameLeaderboard"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<string> ReciveBackup(string Token, string Studio, string NameLeaderboard)
+        public async Task<string> ReciveBackup(string Token, string Studio, string NameLeaderboard,string Count)
         {
-            var result = await LeaderboardModel.ReciveBackup(Token, Studio, NameLeaderboard);
+            var result = await LeaderboardModel.ReciveBackup(Token, Studio, NameLeaderboard,int.Parse(Count));
 
             if (result.ElementCount >= 1)
             {
@@ -235,9 +235,9 @@ namespace Backend.Controllers.PageLeaderBoard
         /// <param name="Version"></param>
         /// <returns></returns>
         [HttpDelete]
-        public async Task RemoveBackup(string Token, string Studio, string NameLeaderboard, string Version)
+        public async Task  RemoveBackup(string Token, string Studio, string TokenBackups)
         {
-            if (await LeaderboardModel.RemoveBackup(Token, Studio, NameLeaderboard, Version))
+            if (await LeaderboardModel.RemoveBackup(Token, Studio, ObjectId.Parse(TokenBackups)))
             {
                 Response.StatusCode = Ok().StatusCode;
             }

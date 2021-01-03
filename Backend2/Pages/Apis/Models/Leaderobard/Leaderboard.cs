@@ -1,4 +1,5 @@
 ﻿using Backend2.Pages.Apis.UserAPI;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Diagnostics;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Serializers;
@@ -589,8 +590,8 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
 
                     FinalResult.Add("Settings", new BsonDocument {
                         {"End",DateTime.Now },
-                        {"Start","" }
-
+                        {"Start","" },
+                        {"Token",ObjectId.GenerateNewId() }
                     });
 
                     var Pipe2 = new[]{
@@ -608,7 +609,7 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
 
 
                     var filter2 = new BsonDocument { { "_id", "Setting" } };
-                    var Update2 = new UpdateDefinitionBuilder<BsonDocument>().Set($"Leaderboards.$[f].Settings.Start",DateTime.Now);
+                    var Update2 = new UpdateDefinitionBuilder<BsonDocument>().Set($"Leaderboards.$[f].Settings.Start", DateTime.Now);
 
                     var FilterArray2 = new[] { new BsonDocumentArrayFilterDefinition<BsonDocument>(new BsonDocument("f.Settings.Name", new BsonDocument("$in", new BsonArray(new[] { NameLeaderboard })))) };
 
@@ -642,27 +643,24 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
         }
 
 
-        public async Task<BsonDocument> ReciveBackup(string Token, string Studio, string NameLeaderboard)
+        //pass
+        public async Task<BsonDocument> ReciveBackup(string Token, string Studio, string NameLeaderboard, int Count)
         {
             try
             {
                 if (await CheackToken(Token))
                 {
-                    var filter = new BsonDocument { { "_id", "Setting" } };
-                    var Setting = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(filter).Result.SingleAsync();
+                    Count = Count >= 100 ? Count : 100;
 
-                    var Result = new BsonDocument { };
-
-
-                    foreach (var item in Setting["Leaderboards"]["List"][NameLeaderboard]["Backups"].AsBsonDocument)
+                    var Pipe = new[]
                     {
-                        item.Value["Detail"].AsBsonDocument.Add("Name", item.Name);
-                        Result.Add(item.Name, item.Value["Detail"]);
-                    }
+                        new BsonDocument{ {"$unwind","$Leaderboards" } },
+                        new BsonDocument{ {"$match" ,new BsonDocument("Leaderboards.Settings.Name",NameLeaderboard )} },
+                        new BsonDocument{{"$project",new BsonDocument { {"Leaderboards",new BsonDocument { {"$slice",new BsonArray() { "$Leaderboards.Backups",Count } } } } } }}
 
+                    };
 
-
-
+                    var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
                     return Result;
                 }
                 else
@@ -677,28 +675,39 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
             }
         }
 
-
-        public async Task<bool> RemoveBackup(string Token, string Studio, string NameLeaderboard, string Version)
+        //pass
+        public async Task<bool> RemoveBackup(string Token, string Studio, ObjectId TokenBackups)
         {
-            if (await CheackToken(Token))
+            try
             {
-                var Filter = new BsonDocument { { "_id", "Setting" } };
-                var Update = new UpdateDefinitionBuilder<BsonDocument>().Unset($"Leaderboards.List.{NameLeaderboard}.Backups.{Version}");
-                var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(Filter, Update);
 
-
-                if (result.ModifiedCount >= 1)
+                if (await CheackToken(Token))
                 {
-                    return true;
+                    var Update = Builders<BsonDocument>.Update.Pull("Leaderboards.$[].Backups", new BsonDocument { { "Settings.Token", TokenBackups } });
+
+               
+                    var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update);
+
+
+                    if (Result.ModifiedCount >= 1)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
                 }
                 else
                 {
                     return false;
                 }
             }
-            else
+            catch (Exception ex)
             {
                 return false;
+
             }
 
         }

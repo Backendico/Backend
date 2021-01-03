@@ -202,12 +202,12 @@ namespace Backend2.Pages.Apis.UserAPI.AdminAPI
         }
 
         [HttpPost]
-        public async Task<string> ReciveBackups(string Token, string Studio, string NameLeaderboard)
+        public async Task<string> ReciveBackups(string Token, string Studio, string NameLeaderboard,string Count)
         {
             if (await BasicAPIs.ReadWriteControll(Studio, API.Read))
             {
 
-                var Result = await Leaderboard.ReciveBackup(Token, Studio, NameLeaderboard);
+                var Result = await Leaderboard.ReciveBackup(Token, Studio, NameLeaderboard ,int.Parse(Count));
                 if (Result.ElementCount >= 1)
                 {
                     Response.StatusCode = Ok().StatusCode;
