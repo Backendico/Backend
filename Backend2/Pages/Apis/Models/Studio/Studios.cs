@@ -32,7 +32,7 @@ namespace Backend2.Pages.Apis.Models.Studio
                     }
                     ,{"Achievements",new BsonArray() },
                     {"Support" ,new BsonArray()},
-                    { "Leaderboards",new BsonDocument{ {"List",new BsonDocument { } } } },
+                    { "Leaderboards",new BsonArray() },
                     { "Monetiz", new BsonDocument {
                         { "PaymentList",new BsonArray()},
                         { "Leaderboards", 3 },

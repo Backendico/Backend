@@ -29,10 +29,26 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
                     var Pipe = new[]
                     {
                         new BsonDocument { {"$unwind" ,"$Leaderboards" } },
-                        new BsonDocument{{"$group",new BsonDocument { {"_id","Leaderboard List " },{"List",new BsonDocument { {"$push", "$Leaderboards"} } } } }}
+                        new BsonDocument{ {"$project",new BsonDocument { {"Leaderboards.Settings" ,1} } } },
+                        new BsonDocument{{"$group",new BsonDocument { {"_id","Leaderboard List " },{"List",new BsonDocument { {"$push", "$Leaderboards"} } } } }},
                     };
+
                     var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync<BsonDocument>();
 
+                    foreach (var item in Result["List"].AsBsonArray)
+                    {
+
+                        var Pipe1 = new[]
+                        {
+                            new BsonDocument{{"$unwind","$Leaderboards"}},
+                            new BsonDocument{{"$match",new BsonDocument { {"Leaderboards.Leaderboard", item.AsBsonDocument["Settings"].AsBsonDocument["Name"] } } }},
+                            new BsonDocument{{"$project",new BsonDocument {{"Leaderboards",1 } }} },
+                        };
+
+                        var PlayerCount = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe1).Result.ToListAsync() ;
+
+                        item.AsBsonDocument["Settings"].AsBsonDocument.Add("Count", PlayerCount.Count);
+                    }
 
                     return Result;
                 }
@@ -175,6 +191,7 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
                    var ListScore= await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe).Result.ToListAsync<BsonDocument>();
                   
                     var Result = new BsonDocument { { "List", new BsonArray() } };
+                   
                     foreach (var item in ListScore)
                     {
                         Result["List"].AsBsonArray.Add(item);
