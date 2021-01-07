@@ -139,7 +139,7 @@ namespace Backend2.Pages.Apis.Models.Player
                 var deserilse = BsonDocument.Parse(AccountDetail);
 
                 var filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
-                var update = new UpdateDefinitionBuilder<BsonDocument>().Set("Account", deserilse);
+                var update = new UpdateDefinitionBuilder<BsonDocument>().Set("Account",deserilse);
 
 
                 var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(filter, update);

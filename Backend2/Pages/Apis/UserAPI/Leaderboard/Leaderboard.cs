@@ -98,13 +98,14 @@ namespace Backend2.Pages.Apis.UserAPI.Leaderboard
             if (await BasicAPIs.ReadWriteControll(Studio, API.Read))
             {
                 var Result = await LeaderboardModel.RecivePlayerLeaderboard(Token, Studio, TokenPlayer);
-                if (Result.IsBsonNull)
+              
+                if (Result.ElementCount>=1)
                 {
-                    Response.StatusCode = BadRequest().StatusCode;
+                    Response.StatusCode = Ok().StatusCode;
                 }
                 else
                 {
-                    Response.StatusCode = Ok().StatusCode;
+                    Response.StatusCode = BadRequest().StatusCode;
                 }
 
                 return Result.ToString();
