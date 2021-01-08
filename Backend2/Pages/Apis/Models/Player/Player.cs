@@ -43,7 +43,7 @@ namespace Backend2.Pages.Apis.Models.Player
                     },
                     {"Logs",new BsonArray() },
                     {"Achievements",new BsonArray() },
-                    {"Leaderboards",new BsonDocument{ {"List",new BsonDocument { } } } }
+                    {"Leaderboards",new BsonArray() }
                 };
 
                 //cheack username 
