@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -45,7 +46,32 @@ namespace Backend2.Pages.Apis.PageContent
             return Result.ToString();
         }
 
+        [HttpPost]
+        public async Task EditContent(string Token, string Studio, string TokenContent, string Detail)
+        {
+            if (await ModelContent.EditContent(Token, Studio, ObjectId.Parse(TokenContent), BsonDocument.Parse(Detail)))
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
 
-        public async Task<string> EditContent()
+        }
+
+        [HttpDelete]
+        public async Task DeleteContent(string Token, string Studio, string TokenContent)
+        {
+
+            if (await ModelContent.DeleteContent(Token, Studio, ObjectId.Parse(TokenContent)))
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+        }
     }
 }

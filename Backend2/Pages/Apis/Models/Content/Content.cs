@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Primitives;
 using Microsoft.VisualBasic.CompilerServices;
 using MongoDB.Bson;
+using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Operations;
@@ -83,9 +84,9 @@ namespace Backend2.Pages.Apis.Models.Content
 
                     var Pipe = new[]
                     {
-                    new BsonDocument{ {"$project",new BsonDocument { {"Content",1 } } } },
-                    new BsonDocument{{"$limit",Count}}
-                };
+                        new BsonDocument{ {"$project",new BsonDocument { {"Content",1 } } } },
+                        new BsonDocument{{"$limit",Count}}
+                    };
                     var Contents = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
                     return Contents;
                 }
@@ -101,30 +102,98 @@ namespace Backend2.Pages.Apis.Models.Content
 
         }
 
-        public async Task<BsonDocument> EditContent(string Token, string Studio, ObjectId TokenDetail, BsonDocument Detail)
+        public async Task<bool> EditContent(string Token, string Studio, ObjectId TokenContent, BsonDocument Detail)
         {
-            try
+            if (await CheackToken(Token))
             {
-
-                var Update = Builders<BsonDocument>.Update.Set("Content.$[f]", Detail);
-
-                var FilterArray = new[]
+                try
                 {
-                    new BsonDocumentArrayFilterDefinition<BsonDocument>(new BsonDocument{ {"f.Setting.Token",new BsonDocument { {"$in",new BsonArray() {TokenDetail } } } } })
-                };
+                    var Update = Builders<BsonDocument>.Update.Set("Content.$[f]", Detail);
 
-                var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update, new UpdateOptions { ArrayFilters = FilterArray });
+                    var FilterArray = new[] { new BsonDocumentArrayFilterDefinition<BsonDocument>(new BsonDocument("f.Settings.Token", new BsonDocument("$in", new BsonArray(new[] { TokenContent })))) };
 
-                return new BsonDocument("Result", result.ModifiedCount);
+                    var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update, new UpdateOptions { ArrayFilters = FilterArray });
+
+
+                    return result.ModifiedCount >= 1;
+                }
+
+                catch (Exception)
+                {
+                    return false;
+
+                }
+
             }
-
-            catch (Exception ex)
+            else
             {
-                return new BsonDocument("ERR", ex.Message);
-
+                return false;
             }
-
 
         }
+
+
+        public async Task<bool> DeleteContent(string Token, string Studio, ObjectId TokenContent)
+        {
+            if (await CheackToken(Token))
+            {
+                try
+                {
+                    var Update = Builders<BsonDocument>.Update.Pull("Content", new BsonDocument { { "Settings.Token", TokenContent } });
+
+                    var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update);
+
+                    return result.ModifiedCount >= 1;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task<BsonDocument> ReceiveContent(string Token, string Studio, ObjectId TokenContent)
+        {
+            if (await CheackToken(Token))
+            {
+
+                try
+                {
+                    var Pipe = new[]
+                    {
+                        new BsonDocument{{"$unwind","$Content"}},
+                        new BsonDocument{{"$match",new BsonDocument { {"Content.Settings.Token",TokenContent } } }},
+                        new BsonDocument{{"$project",new BsonDocument { {"Content",1 } } }}
+                    };
+
+                    var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
+
+
+                    var Update = Builders<BsonDocument>.Update.Inc("Content.$[f].Settings.Index",1);
+
+                    var FilterArray = new[] { new BsonDocumentArrayFilterDefinition<BsonDocument>(new BsonDocument("f.Settings.Token", new BsonDocument("$in", new BsonArray(new[] {TokenContent })))) };
+
+                    await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update,new UpdateOptions {ArrayFilters=FilterArray });
+
+
+                    return Result;
+
+                }
+                catch (Exception)
+                {
+                    return new BsonDocument();
+                }
+            }
+            else
+            {
+                return new BsonDocument();
+            }
+
+        }
+   
     }
 }

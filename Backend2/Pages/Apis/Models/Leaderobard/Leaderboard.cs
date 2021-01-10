@@ -698,7 +698,6 @@ namespace Backend2.Pages.Apis.Models.Leaderobard
         {
             try
             {
-
                 if (await CheackToken(Token))
                 {
                     var Update = Builders<BsonDocument>.Update.Pull("Leaderboards.$[].Backups", new BsonDocument { { "Settings.Token", TokenBackups } });
