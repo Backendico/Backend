@@ -32,7 +32,7 @@ namespace Backend2.Pages.Apis.Models.Studio
                     }
                     ,{"Achievements",new BsonArray() },
                     {"Support" ,new BsonArray()},
-                    { "Leaderboards",new BsonDocument{ {"List",new BsonDocument { } } } },
+                    { "Leaderboards",new BsonArray() },
                     { "Monetiz", new BsonDocument {
                         { "PaymentList",new BsonArray()},
                         { "Leaderboards", 3 },
@@ -87,9 +87,7 @@ namespace Backend2.Pages.Apis.Models.Studio
                     finalResult["Settings"].AsBsonArray.Add(Setting);
                 }
 
-
-                //Control Write read
-
+                finalResult.Add("ServerTime", DateTime.Now.Ticks);
 
                 return finalResult.ToString();
             }
@@ -99,7 +97,6 @@ namespace Backend2.Pages.Apis.Models.Studio
             }
 
         }
-
 
         public async Task<bool> Delete(string Token, string NameStudio)
         {
@@ -196,7 +193,6 @@ namespace Backend2.Pages.Apis.Models.Studio
             }
         }
 
-
         public async Task<BsonDocument> RecivePaymentList(string Token, string NameStudio)
         {
             if (await CheackToken(Token))
@@ -234,5 +230,64 @@ namespace Backend2.Pages.Apis.Models.Studio
             }
         }
 
+        public async Task<bool> GenerateNewToken(string Token)
+        {
+            if (await CheackToken(Token))
+            {
+                try
+                {
+
+                    var NewToken = ObjectId.GenerateNewId().ToString();
+
+                    var Filter = new BsonDocument { { "AccountSetting.Token", Token } };
+                    var Update = new UpdateDefinitionBuilder<BsonDocument>().Set("AccountSetting.Token", NewToken);
+                    await Client.GetDatabase("Users").GetCollection<BsonDocument>("Users").UpdateOneAsync(Filter, Update);
+
+                    var SettingUser = await Client.GetDatabase("Users").GetCollection<BsonDocument>("Users").FindAsync(new BsonDocument { { "AccountSetting.Token", NewToken } }).Result.SingleAsync();
+
+                    foreach (var Studios in SettingUser["Games"].AsBsonArray)
+                    {
+                        var Update1 = new UpdateDefinitionBuilder<BsonDocument>().Set("Setting.Creator", NewToken);
+
+                        await Client.GetDatabase(Studios.AsString).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update1);
+                    }
+
+
+                    //send Email
+                    try
+                    {
+
+                        var Body = $"Hi Dear " +
+                            $"Your token was successfully changed in all studios" +
+                            "\n" +
+                            $"Previous token: {Token}" +
+                            "\n" +
+                            $"New token: {NewToken}" +
+                            "\n\n" +
+                            $"Thanks" +
+                            "\n" +
+                            $"Backendi.ir";
+                        SendMail_Info(new System.Net.Mail.MailMessage("info@backendi.ir", SettingUser["AccountSetting"]["Email"].AsString, "Token Change", Body));
+
+                    }
+                    catch (Exception)
+                    {
+
+                    }
+                    return true;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+
+
+            }
+            else
+            {
+                return false;
+            }
+        }
+   
     }
 }

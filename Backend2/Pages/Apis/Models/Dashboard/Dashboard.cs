@@ -30,7 +30,8 @@ namespace Backend2.Pages.Apis.Models.Dashboard
                         {"Logs",new BsonDocument{ {"Count",0 },{"Totall",0 } } },
                         {"APIs",new BsonDocument{ {"Count",0 },{"Totall",0 } }},
                         {"Achievements",new BsonDocument{ {"Count",0 },{"Totall",0 } }},
-                    };
+                        {"Store",new BsonDocument{ {"Count",0 },{"Totall",0 } }} 
+            };
 
             try
             {
@@ -39,8 +40,13 @@ namespace Backend2.Pages.Apis.Models.Dashboard
                     //player_24hours
                     try
                     {
-                        var Filter1 = new BsonDocument { { "Account.Created", new BsonDocument { { "$gte", DateTime.Now.AddHours(-24) } } } };
-                        var Player_24Hours = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(Filter1).Result.ToListAsync();
+                        var Pipe = new[] {
+                        new BsonDocument{ {"$project",new BsonDocument { { "Online",new BsonDocument { {"$gte", new BsonArray() { "$Account.Created", DateTime.Now.AddHours(-24) } } } } } } },
+                        new BsonDocument{{"$match",new BsonDocument { {"Online",true } } }}
+                        };
+
+                        var Player_24Hours = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe).Result.ToListAsync();
+
                         Result["Players"]["24Hours"] = Player_24Hours.Count;
                     }
                     catch (Exception)
@@ -50,21 +56,31 @@ namespace Backend2.Pages.Apis.Models.Dashboard
                     //player_1Day
                     try
                     {
-                        var Filter2 = new BsonDocument { { "Account.Created", new BsonDocument { { "$gte", DateTime.Now.AddDays(-1) } } } };
-                        var Player_1day = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(Filter2).Result.ToListAsync();
-                        Result["Players"]["1Days"] = Player_1day.Count;
+                        var Pipe = new[] {
+                        new BsonDocument{ {"$project",new BsonDocument { { "Online",new BsonDocument { {"$gte", new BsonArray() { "$Account.Created", DateTime.Now.AddDays(-1) } } } } } } },
+                        new BsonDocument{{"$match",new BsonDocument { {"Online",true } } }}
+                        };
+
+                        var Player_24Hours = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe).Result.ToListAsync();
+
+                        Result["Players"]["1Days"] = Player_24Hours.Count;
                     }
                     catch (Exception)
                     {
                     }
 
 
-                    //player_7Day
+                    //player_7day
                     try
                     {
-                        var Filter3 = new BsonDocument { { "Account.Created", new BsonDocument { { "$gte", DateTime.Now.AddDays(-7) } } } };
-                        var Player_7day = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(Filter3).Result.ToListAsync();
-                        Result["Players"]["7Days"] = Player_7day.Count;
+                        var Pipe = new[] {
+                        new BsonDocument{ {"$project",new BsonDocument { { "Online",new BsonDocument { {"$gte", new BsonArray() { "$Account.Created", DateTime.Now.AddDays(-7) } } } } } } },
+                        new BsonDocument{{"$match",new BsonDocument { {"Online",true } } }}
+                        };
+
+                        var Player_24Hours = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe).Result.ToListAsync();
+
+                        Result["Players"]["7Days"] = Player_24Hours.Count;
                     }
                     catch (Exception)
                     {
@@ -73,9 +89,14 @@ namespace Backend2.Pages.Apis.Models.Dashboard
                     //player_30Day
                     try
                     {
-                        var Filter4 = new BsonDocument { { "Account.Created", new BsonDocument { { "$gte", DateTime.Now.AddMonths(-1) } } } };
-                        var Player_30Day = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(Filter4).Result.ToListAsync();
-                        Result["Players"]["30Days"] = Player_30Day.Count;
+                        var Pipe = new[] {
+                        new BsonDocument{ {"$project",new BsonDocument { { "Online",new BsonDocument { {"$gte", new BsonArray() { "$Account.Created", DateTime.Now.AddMonths(-1) } } } } } } },
+                        new BsonDocument{{"$match",new BsonDocument { {"Online",true } } }}
+                        };
+
+                        var Player_24Hours = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe).Result.ToListAsync();
+
+                        Result["Players"]["30Days"] = Player_24Hours.Count;
                     }
                     catch (Exception)
                     {
@@ -85,9 +106,14 @@ namespace Backend2.Pages.Apis.Models.Dashboard
                     try
                     {
 
-                        var Filter5 = new BsonDocument { { "Account.LastLogin", new BsonDocument { { "$gte", DateTime.Now.AddHours(-24) } } } };
-                        var Login_24Hours = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(Filter5).Result.ToListAsync();
-                        Result["Logins"]["24Hours"] = Login_24Hours.Count;
+                        var Pipe = new[] {
+                        new BsonDocument{ {"$project",new BsonDocument { { "Online",new BsonDocument { {"$gte", new BsonArray() { "$Account.LastLogin", DateTime.Now.AddHours(-24) } } } } } } },
+                        new BsonDocument{{"$match",new BsonDocument { {"Online",true } } }}
+                        };
+
+                        var Player_24Hours = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe).Result.ToListAsync();
+
+                        Result["Logins"]["24Hours"] = Player_24Hours.Count;
                     }
                     catch (Exception)
                     {
@@ -97,9 +123,14 @@ namespace Backend2.Pages.Apis.Models.Dashboard
                     //Login_1Day
                     try
                     {
-                        var Filter6 = new BsonDocument { { "Account.LastLogin", new BsonDocument { { "$gte", DateTime.Now.AddDays(-1) } } } };
-                        var Login_1Day = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(Filter6).Result.ToListAsync();
-                        Result["Logins"]["1Days"] = Login_1Day.Count;
+                        var Pipe = new[] {
+                        new BsonDocument{ {"$project",new BsonDocument { { "Online",new BsonDocument { {"$gte", new BsonArray() { "$Account.LastLogin", DateTime.Now.AddDays(-1) } } } } } } },
+                        new BsonDocument{{"$match",new BsonDocument { {"Online",true } } }}
+                        };
+
+                        var Player_24Hours = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe).Result.ToListAsync();
+
+                        Result["Logins"]["1Days"] = Player_24Hours.Count;
                     }
                     catch (Exception)
                     {
@@ -109,9 +140,14 @@ namespace Backend2.Pages.Apis.Models.Dashboard
                     try
                     {
 
-                        var Filter7 = new BsonDocument { { "Account.LastLogin", new BsonDocument { { "$gte", DateTime.Now.AddDays(-7) } } } };
-                        var Login_7Day = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(Filter7).Result.ToListAsync();
-                        Result["Logins"]["7Days"] = Login_7Day.Count;
+                        var Pipe = new[] {
+                        new BsonDocument{ {"$project",new BsonDocument { { "Online",new BsonDocument { {"$gte", new BsonArray() { "$Account.LastLogin", DateTime.Now.AddDays(-7) } } } } } } },
+                        new BsonDocument{{"$match",new BsonDocument { {"Online",true } } }}
+                        };
+
+                        var Player_24Hours = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe).Result.ToListAsync();
+
+                        Result["Logins"]["7Days"] = Player_24Hours.Count;
                     }
                     catch (Exception)
                     {
@@ -121,9 +157,14 @@ namespace Backend2.Pages.Apis.Models.Dashboard
                     //Login_30Day
                     try
                     {
-                        var Filter8 = new BsonDocument { { "Account.LastLogin", new BsonDocument { { "$gte", DateTime.Now.AddMonths(-1) } } } };
-                        var Login_30Day = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(Filter8).Result.ToListAsync();
-                        Result["Logins"]["30Days"] = Login_30Day.Count;
+                        var Pipe = new[] {
+                        new BsonDocument{ {"$project",new BsonDocument { { "Online",new BsonDocument { {"$gte", new BsonArray() { "$Account.LastLogin", DateTime.Now.AddMonths(-1) } } } } } } },
+                        new BsonDocument{{"$match",new BsonDocument { {"Online",true } } }}
+                        };
+
+                        var Player_24Hours = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe).Result.ToListAsync();
+
+                        Result["Logins"]["30Days"] = Player_24Hours.Count;
                     }
                     catch (Exception)
                     {
@@ -131,85 +172,77 @@ namespace Backend2.Pages.Apis.Models.Dashboard
 
 
                     //LeaderboardCount
+                    //LeaderboardTotall
+                    //playerTotall
+                    //LogCount
+                    //logTotall
+                    //API Count
+                    //API Totall
+                    //Achievement Count
+                    //Achievement Totall
                     try
                     {
-                        var Option1 = new FindOptions<BsonDocument>();
-                        Option1.Projection = new BsonDocument { { "Leaderboards", 1 } };
-                        var Count_Leaderboards = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } }).Result.SingleAsync();
-                        Result["Leaderboards"]["Count"] = Count_Leaderboards["Leaderboards"]["List"].AsBsonDocument.ElementCount;
+                        var Pipe = new[] {
+                        new BsonDocument{ {"$project" ,new BsonDocument
+                        {
+                            { "LeaderboardCount", new BsonDocument {{ "$size", "$Leaderboards" } } },
+                            {"LeaderboardsTotall","$Monetiz.Leaderboards" },
+
+                            {"PlayerTotall","$Monetiz.Players" },
+
+                            { "LogCount", new BsonDocument {{ "$size", "$Logs" } } },
+                            {"LogTotall","$Monetiz.Logs" },
+
+                            {"APICount","$Monetiz.Apis" },
+                            {"APITotall",new BsonDocument{ {"$sum",new BsonArray() {"$APIs.Read","$APIs.Write" } } } },
+
+                            { "AchievementsCount", new BsonDocument {{ "$size", "$Achievements" } } },
+                            {"AchievemenetsTotall", "$Monetiz.Achievements" },
+
+                            { "StoreCount", new BsonDocument {{ "$size", "$Store" } } },
+                               {"StoreTotall", "$Monetiz.Store" },
+
+                        } } },
+                        };
+                        var Details = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
+
+                        Result["Leaderboards"]["Count"] = Details["LeaderboardCount"];
+                        Result["Leaderboards"]["Totall"] = Details["LeaderboardsTotall"];
+
+                        Result["PlayersMonetiz"]["Totall"] = Details["PlayerTotall"];
+
+                        Result["Logs"]["Count"] = Details["LogCount"];
+                        Result["Logs"]["Totall"] = Details["LogTotall"];
+
+                        Result["APIs"]["Count"] = Details["APICount"];
+                        Result["APIs"]["Totall"] = Details["APITotall"];
+
+                        Result["Achievements"]["Count"] = Details["AchievementsCount"];
+                        Result["Achievements"]["Totall"] = Details["AchievemenetsTotall"];
+
+                        Result["Store"]["Count"] = Details["StoreCount"];
+                        Result["Store"]["Totall"] = Details["StoreTotall"];
                     }
                     catch (Exception)
                     {
-                        Result["Counts"].AsBsonDocument.Add("Leaderboards", 0);
                     }
+
 
                     //PlayerCount
                     try
                     {
-                        var Count_Player = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync("{}").Result.ToListAsync();
+                        var Pipe = new[]
+                        {
+                            new BsonDocument{ {"$count" ,"Account"} }
+                        };
 
-                        Result["PlayersMonetiz"]["Count"] = Count_Player.Count;
+                        var Count_Player = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
+
+                        Result["PlayersMonetiz"]["Count"] = Count_Player["Account"];
                     }
                     catch (Exception) { };
 
 
-                    //Logs
-                    try
-                    {
-                        var Pipe = new[]
-                        {
-                            new BsonDocument{{"$project" , new BsonDocument { {"_id",0 } ,{"Count",new BsonDocument { { "$size", "$Logs" } } },{"Totall","$Monetiz.Logs" } } } },
-                        };
-
-                        var Results = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
-                        Result["Logs"] = Results;
-                    }
-                    catch (Exception)
-                    {
-                    }
-
-                    //APIs
-                    try
-                    {
-                        var Pipe = new[]
-                        {
-                           new BsonDocument{ {"$project",new BsonDocument { {"_id",0 },{"Count",new BsonDocument { {"$sum",new BsonArray { {"$APIs.Write" },{"$APIs.Read" } } } } },{"Totall","$Monetiz.Apis" } } } }
-                        };
-
-                        var ResultAPI = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
-
-                        Result["APIs"] = ResultAPI;
-
-                    }
-                    catch (Exception)
-                    {
-
-                    }
-
-                    try
-                    {
-                        var Monetiz = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } }).Result.SingleAsync();
-                        Result["Achievements"]["Count"] = Monetiz["Achievements"].AsBsonArray.Count;
-                    }
-                    catch (Exception)
-                    {
-
-                    }
-
-                    //player & Leaderboard & Monetiz Totall
-                    try
-                    {
-                        var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Monetiz", 1 } } };
-
-                        var Monetiz = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").FindAsync(new BsonDocument { { "_id", "Setting" } }, Option).Result.SingleAsync();
-                        Result["PlayersMonetiz"]["Totall"] = Monetiz["Monetiz"]["Players"];
-                        Result["Leaderboards"]["Totall"] = Monetiz["Monetiz"]["Leaderboards"];
-                        Result["Achievements"]["Totall"] = Monetiz["Monetiz"]["Achievements"];
-                    }
-                    catch (Exception)
-                    {
-
-                    }
 
                     return Result;
                 }

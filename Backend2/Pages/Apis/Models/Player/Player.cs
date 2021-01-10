@@ -43,7 +43,7 @@ namespace Backend2.Pages.Apis.Models.Player
                     },
                     {"Logs",new BsonArray() },
                     {"Achievements",new BsonArray() },
-                    {"Leaderboards",new BsonDocument{ {"List",new BsonDocument { } } } }
+                    {"Leaderboards",new BsonArray() }
                 };
 
                 //cheack username 
@@ -80,7 +80,6 @@ namespace Backend2.Pages.Apis.Models.Player
 
                 var Filters = new FindOptions<BsonDocument, BsonDocument>();
                 Filters.Limit = Count;
-                Filters.Projection = new BsonDocument { { "Account.Password", 0 } };
                 Filters.Sort = new BsonDocument { { "Account.Created", -1 } };
                 var Players = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync("{}", Filters);
 
@@ -140,7 +139,7 @@ namespace Backend2.Pages.Apis.Models.Player
                 var deserilse = BsonDocument.Parse(AccountDetail);
 
                 var filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
-                var update = new UpdateDefinitionBuilder<BsonDocument>().Set("Account", deserilse);
+                var update = new UpdateDefinitionBuilder<BsonDocument>().Set("Account",deserilse);
 
 
                 var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(filter, update);

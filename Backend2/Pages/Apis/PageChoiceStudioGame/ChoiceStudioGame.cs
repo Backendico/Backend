@@ -168,5 +168,25 @@ namespace Backend.Controllers.PageChoiceStudioGame
 
         }
 
+        /// <summary>
+        /// genereate new token for aut 
+        /// </summary>
+        /// <param name="Token"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task GenerateToken(string Token)
+        {
+            if (await Studio.GenerateNewToken(Token))
+            {
+                Response.StatusCode = Ok().StatusCode;
+            }
+            else
+            {
+                Response.StatusCode = BadRequest().StatusCode;
+            }
+        }
+ 
+    
+    
     }
 }

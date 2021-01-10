@@ -59,13 +59,12 @@ namespace Backend2.Pages.Apis.PageDashboard
             if (Result.ElementCount >= 1)
             {
                 Response.StatusCode = Ok().StatusCode;
-                return Result.ToString();
             }
             else
             {
                 Response.StatusCode = BadRequest().StatusCode;
-                return Result.ToString();
             }
+                return Result.ToString();
         }
 
 
