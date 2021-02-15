@@ -179,7 +179,7 @@ namespace Backend2.Pages.Apis.Models.Content
 
                     await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Setting").UpdateOneAsync(new BsonDocument { { "_id", "Setting" } }, Update,new UpdateOptions {ArrayFilters=FilterArray });
 
-
+                    
                     return Result;
 
                 }

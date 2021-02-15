@@ -61,39 +61,50 @@ namespace Backend2.Pages.Apis.Models.Studio
 
         }
 
-        public async Task<string> ReciveStudios(string Token)
+        public async Task<BsonDocument> ReciveStudios(string Token)
         {
             if (await CheackToken(Token))
             {
-                var Option = new FindOptions<BsonDocument>();
-                Option.Projection = new BsonDocument { { "Games", 1 }, { "_id", 0 } };
-
-
-                var filter = new BsonDocument { { "AccountSetting.Token", Token } };
-
-                var ResultFind = await Client.GetDatabase(UsersDB).GetCollection<BsonDocument>(UsersCollection).FindAsync(filter, Option).Result.SingleAsync();
-
-
-                var finalResult = new BsonDocument() { { "Settings", new BsonArray() } };
-                foreach (var StudioName in ResultFind["Games"].AsBsonArray)
+                try
                 {
-                    var Option1 = new FindOptions<BsonDocument>();
-                    Option.Projection = new BsonDocument { { "Setting", 1 } };
-                    var FilterSettingFind = new BsonDocument { { "_id", "Setting" } };
+                    var Pipe = new[]
+                    {
+                        new BsonDocument{{"$match",new BsonDocument { {"AccountSetting.Token",Token } } }},
+                        new BsonDocument{{"$project",new BsonDocument { {"Games",1 } } }}
+                    };
 
-                    var Setting = await Client.GetDatabase(StudioName.AsString).GetCollection<BsonDocument>("Setting").FindAsync(FilterSettingFind, Option1).Result.SingleAsync<BsonDocument>();
+                    var Games = await Client.GetDatabase("Users").GetCollection<BsonDocument>("Users").AggregateAsync<BsonDocument>(Pipe).Result.SingleAsync();
+
+                    var FinalResult = new BsonDocument()
+                    {
+                        {"Studios",new BsonArray() }
+                    };
 
 
-                    finalResult["Settings"].AsBsonArray.Add(Setting);
+                    foreach (var item in Games["Games"].AsBsonArray)
+                    {
+                        var Pipe1 = new[]
+                        {
+
+                            new BsonDocument{{"$project",new BsonDocument { {"Setting",1 }, { "_id", 0} } }}
+                        };
+
+                        var Setting = await Client.GetDatabase(item.AsString).GetCollection<BsonDocument>("Setting").AggregateAsync<BsonDocument>(Pipe1).Result.SingleAsync();
+                        FinalResult["Studios"].AsBsonArray.Add(Setting);
+                    };
+
+                    FinalResult.Add("ServerTime", DateTime.Now);
+                    return FinalResult;
                 }
+                catch (Exception ex)
+                {
 
-                finalResult.Add("ServerTime", DateTime.Now.Ticks);
-
-                return finalResult.ToString();
+                    return new BsonDocument("ERR", ex.Message);
+                }
             }
             else
             {
-                return "";
+                return new BsonDocument("err", 2);
             }
 
         }
@@ -288,6 +299,6 @@ namespace Backend2.Pages.Apis.Models.Studio
                 return false;
             }
         }
-   
+
     }
 }

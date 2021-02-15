@@ -1,23 +1,22 @@
-﻿using Backend2.Pages.Apis.Models.Content;
+﻿using Backend2.Pages.Apis.Models.KeyValue;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace Backend2.Pages.Apis.UserAPI.Content
+namespace Backend2.Pages.Apis.UserAPI.KeyValue
 {
     [Controller]
-    public class Content : ControllerBase
+    public class KeyValue : ControllerBase
     {
-        Models.Content.Content ModelContent = new Models.Content.Content();
-
+        Models.KeyValue.KeyValue ModelKeyValue = new Models.KeyValue.KeyValue();
 
         [HttpPost]
-        public async Task<string> ReceiveContents(string Token, string Studio, string Count)
+        public async Task<string> ReceiveValue(string Token, string Studio, string Key)
         {
-            var Result = await ModelContent.RecieveContents(Token, Studio, int.Parse(Count));
+            var Result = await ModelKeyValue.ReceiveValue(Token, Studio, Key);
 
             if (Result.ElementCount >= 1)
             {
@@ -33,10 +32,10 @@ namespace Backend2.Pages.Apis.UserAPI.Content
 
 
         [HttpPost]
-        public async Task<string> ReceiveContent(string Token, string Studio, string TokenContent)
+        public async Task<string> ReceiveKeys(string Token, string Studio)
         {
+            var Result = await ModelKeyValue.ReceiveKeys(Token, Studio);
 
-            var Result = await ModelContent.ReceiveContent(Token, Studio, ObjectId.Parse(TokenContent));
             if (Result.ElementCount >= 1)
             {
                 Response.StatusCode = Ok().StatusCode;
@@ -46,10 +45,7 @@ namespace Backend2.Pages.Apis.UserAPI.Content
                 Response.StatusCode = BadRequest().StatusCode;
             }
 
-
             return Result.ToString();
         }
-
-
     }
 }

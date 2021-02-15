@@ -52,7 +52,7 @@ namespace Backend.Controllers.PageChoiceStudioGame
         {
             var result = await Studio.ReciveStudios(Token);
 
-            if (result.Length >= 1)
+            if (result.ElementCount >= 1)
             {
                 Response.StatusCode = Ok().StatusCode;
             }
@@ -60,7 +60,7 @@ namespace Backend.Controllers.PageChoiceStudioGame
             {
                 Response.StatusCode = BadRequest().StatusCode;
             }
-            return result;
+            return result.ToString();
         }
 
 
@@ -185,8 +185,8 @@ namespace Backend.Controllers.PageChoiceStudioGame
                 Response.StatusCode = BadRequest().StatusCode;
             }
         }
- 
-    
-    
+
+
+
     }
 }
