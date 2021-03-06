@@ -67,10 +67,15 @@ namespace Backend2.Pages.Apis.Models.Player
             }
         }
 
+
         public async Task<string> ReciveDetailPagePlayer(string Token, string Studio, int Count)
         {
             if (await CheackToken(Token))
             {
+
+                try
+                {
+
                 //step 0:
                 if (Count <= 0)
                     Count = 100;
@@ -78,26 +83,43 @@ namespace Backend2.Pages.Apis.Models.Player
                 //Step :1 
                 var Result = new BsonDocument { };
 
-                var Filters = new FindOptions<BsonDocument, BsonDocument>();
-                Filters.Limit = Count;
-                Filters.Sort = new BsonDocument { { "Account.Created", -1 } };
-                var Players = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync("{}", Filters);
-
-
-                var List = new BsonArray();
-
-                await Players.ForEachAsync(eachplayer =>
+                var pipe = new[]
                 {
-                    List.Add(eachplayer);
-                });
+                    new BsonDocument{{"$project",new BsonDocument
+                    {
+                        {"Account.Name",1 },
+                        {"Account.IsBan",1 },
+                        {"Account.Email",1 },
+                        {"Account.LastLogin",1 },
+                        {"Account.Created",1 },
+                        {"Account.Currencey" ,"Not Implement"},
+                        {"Account.Country",1 },
+                        {"Account.Token",1 },
+                        {"Account.Username",1 },
+                        {"Account.Avatar",1 }
 
-                Result["ListPlayers"] = List;
+                    } },
 
+                    },
+                   new BsonDocument{{"$limit",Count}},
+                   new BsonDocument{{"$group",new BsonDocument{ {"_id","_id" },{ "Players", new BsonDocument { { "$push", "$Account" } } } } } },
+
+
+                };
+
+                var Players = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").AggregateAsync<BsonDocument>(pipe).Result.SingleAsync();
+
+                Result["ListPlayers"] = Players;
 
                 //Step:2
                 Result["Players"] = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").CountDocumentsAsync("{}");
 
                 return Result.ToString();
+                }
+                catch (Exception ex)
+                {
+                    return new BsonDocument("ERR",ex.Message).ToString();
+                }
             }
             else
             {
@@ -139,7 +161,7 @@ namespace Backend2.Pages.Apis.Models.Player
                 var deserilse = BsonDocument.Parse(AccountDetail);
 
                 var filter = new BsonDocument { { "Account.Token", ObjectId.Parse(TokenPlayer) } };
-                var update = new UpdateDefinitionBuilder<BsonDocument>().Set("Account",deserilse);
+                var update = new UpdateDefinitionBuilder<BsonDocument>().Set("Account", deserilse);
 
 
                 var result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(filter, update);
@@ -373,12 +395,12 @@ namespace Backend2.Pages.Apis.Models.Player
         }
 
 
-        public async Task<BsonDocument> LoginPlayer(string Token,string Studio,string Username,string Password)
+        public async Task<BsonDocument> LoginPlayer(string Token, string Studio, string Username, string Password)
         {
             if (await CheackToken(Token))
             {
                 var Option = new FindOptions<BsonDocument>() { Projection = new BsonDocument { { "Account", 1 } } };
-                var Player = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(new BsonDocument { { "Account.Username", Username },{"Account.Password",Password } }, Option).Result.SingleAsync();
+                var Player = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(new BsonDocument { { "Account.Username", Username }, { "Account.Password", Password } }, Option).Result.SingleAsync();
 
                 return Player;
             }
@@ -781,7 +803,7 @@ namespace Backend2.Pages.Apis.Models.Player
             }
         }
 
-        public async Task<bool> ChangePassword(string Token, string Studio, string TokenPlayer,string Password)
+        public async Task<bool> ChangePassword(string Token, string Studio, string TokenPlayer, string Password)
         {
             if (await CheackToken(Token))
             {
@@ -791,8 +813,8 @@ namespace Backend2.Pages.Apis.Models.Player
                     var Update = new UpdateDefinitionBuilder<BsonDocument>().Set("Account.Password", Password).Set("Account.RecoveryCode", 0);
 
                     var Result = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").UpdateOneAsync(Filter, Update);
-                    
-                    
+
+
                     var player = await Client.GetDatabase(Studio).GetCollection<BsonDocument>("Players").FindAsync(Filter).Result.SingleAsync();
 
                     //send mail status
